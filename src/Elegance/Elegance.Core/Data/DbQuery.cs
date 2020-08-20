@@ -10,7 +10,7 @@ namespace Elegance.Core.Data
 {
     internal class DbQuery<T> : IDbQuery<T> where T : new()
     {
-        private readonly IList<IDbDataParameter> _parameters;
+        private readonly IList<IDbQueryParameter> _parameters;
         private readonly IDbConnection _connection;
         private readonly IDbTransaction _transaction;
 
@@ -23,11 +23,25 @@ namespace Elegance.Core.Data
                 throw new ArgumentException("Cannot create a Query on a closed connection.");
             }
 
-            _parameters = new List<IDbDataParameter>();
+            _parameters = new List<IDbQueryParameter>();
             _connection = connection;
             _transaction = transaction;
 
             _sql = sql;
+        }
+
+        public IDbQuery<T> SetParameter<TParam>(string name, TParam value) where TParam : IConvertible
+        {
+            return SetParameter(name, value, null);
+        }
+
+        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, DbType? dbTypeOverride) where TParam : IConvertible
+        {
+            var parameter = new DbQueryParameter<TParam>(name, value, dbTypeOverride);
+
+            _parameters.Add(parameter);
+
+            return this;
         }
 
         public T Result()
@@ -39,17 +53,7 @@ namespace Elegance.Core.Data
         {
             var results = new List<T>();
 
-            using var command = _connection.CreateCommand();
-
-            command.Transaction = _transaction;
-            command.CommandText = _sql;
-            command.CommandType = CommandType.Text;
-
-            foreach (var parameter in _parameters)
-            {
-                command.Parameters.Add(parameter);
-            }
-
+            using var command = CreateCommand();
             using var reader = command.ExecuteReader();
 
             while (reader.Read())
@@ -70,11 +74,22 @@ namespace Elegance.Core.Data
             return results;
         }
 
-        public IDbQuery<T> SetParameter(IDbDataParameter parameter)
+        private IDbCommand CreateCommand()
         {
-            _parameters.Add(parameter);
+            var command = _connection.CreateCommand();
 
-            return this;
+            command.Transaction = _transaction;
+            command.CommandText = _sql;
+            command.CommandType = CommandType.Text;
+
+            foreach (var parameter in _parameters)
+            {
+                parameter.AddToCommand(command);
+            }
+
+            _parameters.Clear();
+
+            return command;
         }
     }
 }
