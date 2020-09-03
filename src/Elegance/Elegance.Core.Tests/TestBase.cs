@@ -14,6 +14,8 @@ namespace Elegance.Core.Tests
     {
         protected static readonly string _connectionString;
 
+        private readonly Queue<Action> _cleanupActions;
+
         protected readonly TestEntityARepository _testEntityARepository;
 
 
@@ -24,6 +26,8 @@ namespace Elegance.Core.Tests
 
         public TestBase()
         {
+            _cleanupActions = new Queue<Action>();
+
             _testEntityARepository = new TestEntityARepository();
         }
 
@@ -48,7 +52,17 @@ namespace Elegance.Core.Tests
         [TestCleanup]
         public void TestCleanup()
         {
+            while (_cleanupActions.TryDequeue(out Action action))
+            {
+                action();
+            }
+
             _testEntityARepository.DropTable();
+        }
+
+        protected void AddCleanupAction(Action action)
+        {
+            _cleanupActions.Enqueue(action);
         }
     }
 }

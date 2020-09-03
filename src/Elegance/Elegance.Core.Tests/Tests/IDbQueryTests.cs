@@ -10,13 +10,28 @@ namespace Elegance.Core.Tests.Tests
     [TestClass]
     public class IDbQueryTests : TestBase
     {
+        private int seed;
+
+        public IDbQueryTests()
+            : base()
+        {
+
+        }
+
         /// <summary>
-        /// Test Method: Test001_InsertAndReadSimpleEntity
+        /// Test Method: Test001_WhenReadingResultFromRawSQL_ResultShouldMatchStandardReaderResult
+        /// 
+        /// When a raw SQL select statement is passed to the Query class, the results should match
+        /// the results produced by the manually written reader code.
         /// </summary>
         [TestMethod]
-        public void Test001_InsertAndReadSimpleEntity()
+        public void Test001_WhenReadingResultFromRawSQL_ResultShouldMatchStandardReaderResult()
         {
             // Arrange
+            var testEntity = GenerateTestEntity();
+            _testEntityARepository.InsertTestEntity(testEntity);
+
+            AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
 
             // Act
             var expectedResults = _testEntityARepository.GetAll_Standard();
@@ -33,25 +48,42 @@ namespace Elegance.Core.Tests.Tests
         }
 
         /// <summary>
-        /// Test Method: Test002_InsertAndReadSimpleEntityWithParameter
+        /// Test Method: Test002_WhenReadingResultFromRawSQLWithParameters_ResultShouldMatchStandardReaderResult
+        /// 
+        /// When a raw SQL select statement is passed to the Query class with parameters specified, the results 
+        /// should match the results produced by the manually written reader code using the same parameters.
         /// </summary>
         [TestMethod]
-        public void Test002_InsertAndReadSimpleEntityWithParameter()
+        public void Test002_WhenReadingResultFromRawSQLWithParameters_ResultShouldMatchStandardReaderResult()
         {
             // Arrange
+            var testEntity = GenerateTestEntity();
+            _testEntityARepository.InsertTestEntity(testEntity);
+
+            AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
 
             // Act
-            var expectedResults = _testEntityARepository.GetById_Standard();
-            var actualResults = _testEntityARepository.GetById_Query();
+            var expectedResult = _testEntityARepository.GetByAllProperties_Standard(testEntity);
+            var actualResult = _testEntityARepository.GetByAllProperties_Query(testEntity);
 
             // Assert
-            Assert.AreEqual(expectedResults.GetType(), actualResults.GetType(), $"Expected type '{expectedResults.GetType().Name}', but got type '{actualResults.GetType().Name}'");
-            Assert.AreEqual(expectedResults.Count, actualResults.Count, $"Expected {expectedResults.Count} results, but got {actualResults.Count}");
+            Assert.AreEqual(expectedResult.GetType(), actualResult.GetType(), $"Expected type '{expectedResult.GetType().Name}', but got type '{actualResult.GetType().Name}'");
+            Assert.IsTrue(TestEntityA.AreEqual(expectedResult, actualResult), "Expected entities to be equal");
+        }
 
-            for (int i = 0; i < expectedResults.Count; i++)
+        private TestEntityA GenerateTestEntity()
+        {
+            seed++;
+
+            return new TestEntityA()
             {
-                Assert.IsTrue(TestEntityA.AreEqual(expectedResults[i], actualResults[i]), "Expected entities to be equal");
-            }
+                PropertyBigInt = seed,
+                PropertyInt = seed,
+                PropertySmallInt = (short)(seed % short.MaxValue),
+                PropertyTinyInt = (byte)(seed % byte.MaxValue),
+                PropertyVarChar = $"{seed}",
+                PropertyDateTime = DateTime.Now.AddDays(seed)
+            };
         }
     }
 }
