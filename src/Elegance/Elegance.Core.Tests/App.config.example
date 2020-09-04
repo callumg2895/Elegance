@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <configuration>
   <appSettings>
-	<add key="connectionString" value="Data Source=DESKTOP-RC9DIEM\SQLEXPRESS;Initial Catalog=EleganceTesting;User ID=sa;Password=pa$$word;"/>
+	<add key="connectionString" value="Data Source=DESKTOP-CLJN5E8;Initial Catalog=EleganceTesting;Trusted_Connection=true;"/>
 	<add key="eleganceLoggingPath" value="C:\Elegance\Logs"/>
   </appSettings>
 </configuration>
