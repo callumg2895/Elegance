@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Elegance.Core.Tests.Data.TestRepository
 {
-    public class TestEntityARepository : Repository
+    public class TestEntityARepository : BaseRepository
     {
         private readonly string _testEntitySelectText = @"
                 select  tea.property_bigint      as PropertyBigInt,
@@ -21,7 +21,7 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 from    test_entity_a tea (nolock)";
 
         public TestEntityARepository()
-            : base(ConnectionFactory.Instance)
+            : base()
         {
 
         }
