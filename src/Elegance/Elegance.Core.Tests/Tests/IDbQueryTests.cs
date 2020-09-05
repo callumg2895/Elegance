@@ -19,13 +19,13 @@ namespace Elegance.Core.Tests.Tests
         }
 
         /// <summary>
-        /// Test Method: Test001_WhenReadingResultFromRawSQL_ResultShouldMatchStandardReaderResult
+        /// Test Method: Test001_WhenReadingResultFromRawSQL_ResultShouldMatchStandardReaderResult:
         /// 
         /// When a raw SQL select statement is passed to the Query class, the results should match
         /// the results produced by the manually written reader code.
         /// </summary>
         [TestMethod]
-        public void Test001_WhenReadingResultFromRawSQL_ResultShouldMatchStandardReaderResult()
+        public void Test001_WhenReadingReferenceTypeResultFromRawSQL_ResultShouldMatchStandardReaderResult()
         {
             // Arrange
             var testEntity = GenerateTestEntity();
@@ -48,13 +48,13 @@ namespace Elegance.Core.Tests.Tests
         }
 
         /// <summary>
-        /// Test Method: Test002_WhenReadingResultFromRawSQLWithParameters_ResultShouldMatchStandardReaderResult
+        /// Test Method: Test002_WhenReadingResultFromRawSQLWithParameters_ResultShouldMatchStandardReaderResult:
         /// 
         /// When a raw SQL select statement is passed to the Query class with parameters specified, the results 
         /// should match the results produced by the manually written reader code using the same parameters.
         /// </summary>
         [TestMethod]
-        public void Test002_WhenReadingResultFromRawSQLWithParameters_ResultShouldMatchStandardReaderResult()
+        public void Test002_WhenReadingReferenceTypeResultFromRawSQLWithParameters_ResultShouldMatchStandardReaderResult()
         {
             // Arrange
             var testEntity = GenerateTestEntity();
@@ -69,6 +69,29 @@ namespace Elegance.Core.Tests.Tests
             // Assert
             Assert.AreEqual(expectedResult.GetType(), actualResult.GetType(), $"Expected type '{expectedResult.GetType().Name}', but got type '{actualResult.GetType().Name}'");
             Assert.IsTrue(TestEntityA.AreEqual(expectedResult, actualResult), "Expected entities to be equal");
+        }
+
+        /// <summary>
+        /// Test Method: Test003_WhenReadingResultFromRawSQLWithInvalidParameters_ResultShouldBeNull:
+        /// 
+        /// When a raw SQL select statement is passed to the Query class with invalid parameters specified,
+        /// the result should be a null.
+        /// </summary>
+        [TestMethod]
+        public void Test003_WhenReadingReferenceTypeResultFromRawSQLWithInvalidParameters_ResultShouldBeNull()
+        {
+            // Arrange
+            var testEntity = GenerateTestEntity();
+            var testEntity2 = GenerateTestEntity();
+            _testEntityARepository.InsertTestEntity(testEntity);
+
+            AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
+
+            // Act
+            var result = _testEntityARepository.GetByAllProperties_Query(testEntity2);
+
+            // Assert
+            Assert.IsNull(result, "Expected result to be null");
         }
 
         private TestEntityA GenerateTestEntity()

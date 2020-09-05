@@ -46,7 +46,7 @@ namespace Elegance.Core.Data
 
         public T Result()
         {
-            return Results().First();
+            return Results().FirstOrDefault();
         }
 
         public IList<T> Results()
