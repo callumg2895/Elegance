@@ -7,7 +7,7 @@ namespace Elegance.Core.Interface
 {
     public interface IDbSession : IDisposable
     {
-        public void OpenTransaction();
+        public void OpenTransaction(IsolationLevel? isolationLevel = null);
 
         public void RollbackTransaction();
 

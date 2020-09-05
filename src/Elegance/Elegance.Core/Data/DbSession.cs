@@ -25,29 +25,16 @@ namespace Elegance.Core.Data
             _dbConnection = _dbConnectionFactory.CreateConnection();
         }
 
-        public void OpenTransaction()
+        public void OpenTransaction(IsolationLevel? isolationLevel = null) 
         {
-            if (_dbTransaction == null)
-            {
-                _dbTransaction = _dbConnection.BeginTransaction();
-            }
+            _dbTransaction ??= isolationLevel.HasValue
+                ? _dbConnection.BeginTransaction(isolationLevel.Value)
+                : _dbConnection.BeginTransaction();
         }
 
-        public void RollbackTransaction()
-        {
-            if (_dbTransaction != null)
-            {
-                _dbTransaction.Rollback();
-            }
-        }
+        public void RollbackTransaction() => _dbTransaction?.Rollback();
 
-        public void CommitTransaction()
-        {
-            if (_dbTransaction != null)
-            {
-                _dbTransaction.Commit();
-            }
-        }
+        public void CommitTransaction() => _dbTransaction?.Commit();
 
         public IDbCommand CreateCommand(string sql)
         {
