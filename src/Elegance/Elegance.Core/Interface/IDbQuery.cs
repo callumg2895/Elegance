@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Elegance.Core.Interface
 {
-    public interface IDbQuery<T> where T : new()
+    public interface IDbQuery<T>
     {
         public IDbQuery<T> SetParameter<TParam>(string name, TParam value) where TParam : IConvertible;
 

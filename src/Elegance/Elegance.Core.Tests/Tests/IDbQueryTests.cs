@@ -21,7 +21,7 @@ namespace Elegance.Core.Tests.Tests
         /// <summary>
         /// Test Method: Test001_WhenReadingResultFromRawSQL_ResultShouldMatchStandardReaderResult:
         /// 
-        /// When a raw SQL select statement is passed to the Query class, the results should match
+        /// When a raw SQL select statement is passed to the CreateQuery method, the results should match
         /// the results produced by the manually written reader code.
         /// </summary>
         [TestMethod]
@@ -50,7 +50,7 @@ namespace Elegance.Core.Tests.Tests
         /// <summary>
         /// Test Method: Test002_WhenReadingResultFromRawSQLWithParameters_ResultShouldMatchStandardReaderResult:
         /// 
-        /// When a raw SQL select statement is passed to the Query class with parameters specified, the results 
+        /// When a raw SQL select statement is passed to the CreateQuery method with parameters specified, the results 
         /// should match the results produced by the manually written reader code using the same parameters.
         /// </summary>
         [TestMethod]
@@ -74,7 +74,7 @@ namespace Elegance.Core.Tests.Tests
         /// <summary>
         /// Test Method: Test003_WhenReadingResultFromRawSQLWithInvalidParameters_ResultShouldBeNull:
         /// 
-        /// When a raw SQL select statement is passed to the Query class with invalid parameters specified,
+        /// When a raw SQL select statement is passed to the CreateQuery method with invalid parameters specified,
         /// the result should be a null.
         /// </summary>
         [TestMethod]
@@ -92,6 +92,29 @@ namespace Elegance.Core.Tests.Tests
 
             // Assert
             Assert.IsNull(result, "Expected result to be null");
+        }
+
+        /// <summary>
+        /// Test Method: Test004_WhenReadingScalarTypeResultFromRawSQL_ResultShouldMatchStandardReaderResult:
+        /// 
+        /// When a raw SQL select statement is passed to the CreateScalarQuery method, the results should match
+        /// the results produced by the manually written reader code.
+        /// </summary>
+        [TestMethod]
+        public void Test004_WhenReadingScalarTypeResultFromRawSQL_ResultShouldMatchStandardReaderResult()
+        {
+            // Arrange
+            var testEntity = GenerateTestEntity();
+            _testEntityARepository.InsertTestEntity(testEntity);
+
+            AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
+
+            // Act
+            var expectedResult = _testEntityARepository.GetAllCount_Standard();
+            var actualResult = _testEntityARepository.GetAllCount_Query();
+
+            // Assert
+            Assert.AreEqual(expectedResult, actualResult, $"Expected type '{expectedResult}', but got type '{actualResult}'");
         }
 
         private TestEntityA GenerateTestEntity()

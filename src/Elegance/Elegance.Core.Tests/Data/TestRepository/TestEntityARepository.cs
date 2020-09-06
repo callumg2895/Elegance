@@ -10,7 +10,7 @@ namespace Elegance.Core.Tests.Data.TestRepository
 {
     public class TestEntityARepository : BaseRepository
     {
-        private readonly string _testEntitySelectText = @"
+        private const string _testEntitySelectText = @"
                 select  tea.property_bigint      as PropertyBigInt,
                         tea.property_int         as PropertyInt,
                         tea.property_smallint    as PropertySmallInt,
@@ -18,6 +18,10 @@ namespace Elegance.Core.Tests.Data.TestRepository
                         tea.property_varchar     as PropertyVarChar,
                         tea.property_datetime    as PropertyDateTime
 
+                from    test_entity_a tea (nolock)";
+
+        private const string _testEntitySelectCountText = @"
+                select  count(*)
                 from    test_entity_a tea (nolock)";
 
         public TestEntityARepository()
@@ -65,7 +69,7 @@ namespace Elegance.Core.Tests.Data.TestRepository
             using var session = CreateSession();
 
             return session
-                .CreateQuery<TestEntityA>(_testEntitySelectText)
+                .CreateObjectQuery<TestEntityA>(_testEntitySelectText)
                 .Results();
         }
 
@@ -77,6 +81,31 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 .ExecuteReader();
 
             return ReadTestEntities(reader);
+        }
+
+        #endregion
+
+        #region GetAllCount
+
+        public int GetAllCount_Query()
+        {
+            using var session = CreateSession();
+
+            return session
+                .CreateScalarQuery<int>(_testEntitySelectCountText)
+                .Result();
+        }
+
+        public int GetAllCount_Standard()
+        {
+            using var session = CreateSession();
+            using var reader = session
+                .CreateCommand(_testEntitySelectCountText)
+                .ExecuteReader();
+
+            reader.Read();
+
+            return int.Parse(reader[0].ToString());
         }
 
         #endregion
@@ -98,7 +127,7 @@ namespace Elegance.Core.Tests.Data.TestRepository
             using var session = CreateSession();
 
             return session
-                .CreateQuery<TestEntityA>(sql)
+                .CreateObjectQuery<TestEntityA>(sql)
                 .SetParameter<Int64>("@property_bigint", testEntity.PropertyBigInt)
                 .SetParameter<Int32>("@property_int", testEntity.PropertyInt)
                 .SetParameter<Int16>("@property_smallint", testEntity.PropertySmallInt)

@@ -15,6 +15,8 @@ namespace Elegance.Core.Interface
 
         public IDbCommand CreateCommand(string sql);
 
-        public IDbQuery<T> CreateQuery<T>(string sql) where T : new();
+        public IDbQuery<T> CreateObjectQuery<T>(string sql) where T : new();
+
+        public IDbQuery<T> CreateScalarQuery<T>(string sql) where T : IConvertible;
     }
 }

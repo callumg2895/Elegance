@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Elegance.Core.Data
 {
-    internal class DbQuery<T> : IDbQuery<T> where T : new()
+    internal abstract class DbQuery<T> : IDbQuery<T>
     {
         private readonly IList<IDbQueryParameter> _parameters;
         private readonly IDbConnection _connection;
@@ -30,6 +30,19 @@ namespace Elegance.Core.Data
             _sql = sql;
         }
 
+        public virtual T Result()
+        {
+            return Results().FirstOrDefault();
+        }
+
+        public virtual IList<T> Results()
+        {
+            using var command = CreateCommand();
+            using var reader = command.ExecuteReader();
+
+            return GetResultFromReader(reader);
+        }
+
         public IDbQuery<T> SetParameter<TParam>(string name, TParam value) where TParam : IConvertible
         {
             return SetParameter(name, value, null);
@@ -44,37 +57,7 @@ namespace Elegance.Core.Data
             return this;
         }
 
-        public T Result()
-        {
-            return Results().FirstOrDefault();
-        }
-
-        public IList<T> Results()
-        {
-            var results = new List<T>();
-
-            using var command = CreateCommand();
-            using var reader = command.ExecuteReader();
-
-            while (reader.Read())
-            {
-                T result = new T();
-
-                foreach (PropertyInfo property in typeof(T).GetProperties())
-                {
-                    var value = reader[property.Name];
-                    var convertedValue = Convert.ChangeType(value, property.PropertyType);
-
-                    property.SetValue(result, convertedValue);
-                }
-
-                results.Add(result);
-            }
-
-            return results;
-        }
-
-        private IDbCommand CreateCommand()
+        protected IDbCommand CreateCommand()
         {
             var command = _connection.CreateCommand();
 
@@ -91,5 +74,7 @@ namespace Elegance.Core.Data
 
             return command;
         }
+
+        protected abstract IList<T> GetResultFromReader(IDataReader reader);
     }
 }

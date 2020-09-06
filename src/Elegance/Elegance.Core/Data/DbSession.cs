@@ -1,4 +1,5 @@
-﻿using Elegance.Core.Interface;
+﻿using Elegance.Core.Data.Query;
+using Elegance.Core.Interface;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -49,10 +50,14 @@ namespace Elegance.Core.Data
             return command;
         }
 
-        public IDbQuery<T> CreateQuery<T>(string sql)
-            where T : new()
+        public IDbQuery<T> CreateObjectQuery<T>(string sql) where T : new()
         {
-            return new DbQuery<T>(_dbConnection, _dbTransaction, sql);
+            return new ObjectDbQuery<T>(_dbConnection, _dbTransaction, sql);
+        }
+
+        public IDbQuery<T> CreateScalarQuery<T>(string sql) where T : IConvertible
+        {
+            return new ScalarDbQuery<T>(_dbConnection, _dbTransaction, sql);
         }
 
         public void Dispose()
