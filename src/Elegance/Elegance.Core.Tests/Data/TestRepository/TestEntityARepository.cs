@@ -16,7 +16,8 @@ namespace Elegance.Core.Tests.Data.TestRepository
                         tea.property_smallint    as PropertySmallInt,
                         tea.property_tinyint     as PropertyTinyInt,
                         tea.property_varchar     as PropertyVarChar,
-                        tea.property_datetime    as PropertyDateTime
+                        tea.property_datetime    as PropertyDateTime,
+                        tea.property_enum        as PropertyEnum
 
                 from    test_entity_a tea (nolock)";
 
@@ -45,7 +46,8 @@ namespace Elegance.Core.Tests.Data.TestRepository
                         property_smallint   smallint,
                         property_tinyint    tinyint,
                         property_varchar    varchar(255),
-                        property_datetime   datetime
+                        property_datetime   datetime,
+                        property_enum       int
                     )")
                 .ExecuteNonQuery();
 
@@ -122,6 +124,7 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 .AppendLine("and tea.property_tinyint = @property_tinyint")
                 .AppendLine("and tea.property_varchar = @property_varchar")
                 .AppendLine("and tea.property_datetime = @property_datetime")
+                .AppendLine("and tea.property_enum = @property_enum")
                 .ToString();
 
             using var session = CreateSession();
@@ -134,6 +137,7 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 .SetParameter<Byte>("@property_tinyint", testEntity.PropertyTinyInt)
                 .SetParameter<String>("@property_varchar", testEntity.PropertyVarChar)
                 .SetParameter<DateTime>("@property_datetime", testEntity.PropertyDateTime, DbType.DateTime)
+                .SetParameter<TestEnumA>("@property_enum", testEntity.PropertyEnum)
                 .Result();
         }
 
@@ -179,7 +183,8 @@ namespace Elegance.Core.Tests.Data.TestRepository
                         property_smallint   ,
                         property_tinyint    ,
                         property_varchar    ,
-                        property_datetime
+                        property_datetime   ,
+                        property_enum
                 )
                 values
                 (
@@ -188,7 +193,8 @@ namespace Elegance.Core.Tests.Data.TestRepository
                     @property_smallint,
                     @property_tinyint,
                     @property_varchar,
-                    @property_datetime
+                    @property_datetime,
+                    @property_enum
                 )";
 
             using var session = CreateSession();
@@ -200,6 +206,7 @@ namespace Elegance.Core.Tests.Data.TestRepository
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_tinyint", Value = testEntity.PropertyTinyInt, DbType = DbType.Byte });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_varchar", Value = testEntity.PropertyVarChar, DbType = DbType.AnsiString });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_datetime", Value = testEntity.PropertyDateTime, DbType = DbType.DateTime });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_enum", Value = (int)testEntity.PropertyEnum, DbType = DbType.Int32 });
 
             command.ExecuteNonQuery();
         }
@@ -237,6 +244,7 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 entity.PropertyTinyInt = (byte)reader[nameof(entity.PropertyTinyInt)];
                 entity.PropertyVarChar = (string)reader[nameof(entity.PropertyVarChar)];
                 entity.PropertyDateTime = (DateTime)reader[nameof(entity.PropertyDateTime)];
+                entity.PropertyEnum = (TestEnumA)(int)reader[nameof(entity.PropertyEnum)];
 
                 entities.Add(entity);
             }

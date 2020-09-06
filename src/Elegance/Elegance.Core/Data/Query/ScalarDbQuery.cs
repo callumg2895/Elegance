@@ -20,10 +20,23 @@ namespace Elegance.Core.Data.Query
 
             while (reader.Read())
             {
-                var result = reader.GetValue(0);
-                var value = (T)Convert.ChangeType(result, typeof(T));
+                var value = reader.GetValue(0);
+                var type = typeof(T);
 
-                results.Add(value);
+                if (type.IsEnum)
+                {
+                    var underlyingType = type.GetEnumUnderlyingType();
+                    var convertedUnderlyingValue = Convert.ChangeType(value, underlyingType);
+                    var convertedValue = (T)Enum.Parse(type, convertedUnderlyingValue.ToString());
+
+                    results.Add(convertedValue);
+                }
+                else
+                {
+                    var convertedValue = (T)Convert.ChangeType(value, type);
+
+                    results.Add(convertedValue);
+                }
             }
 
             return results;

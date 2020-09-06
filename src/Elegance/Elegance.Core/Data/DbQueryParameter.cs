@@ -41,15 +41,23 @@ namespace Elegance.Core.Data
 
         internal DbQueryParameter(string name, T value, DbType? dbTypeOverride = null)
         {
-            _value = value;
-            _valueType = typeof(T);
+            var type = typeof(T);
+
             _name = name;
+            _value = value;
+            _valueType = type.IsEnum
+                ? type.GetEnumUnderlyingType()
+                : type;
 
             if (dbTypeOverride.HasValue)
             {
                 _dbType = dbTypeOverride.Value;
             }
-            else if (!_dbTypeMappings.TryGetValue(_valueType, out var dbType))
+            else if (_dbTypeMappings.TryGetValue(_valueType, out var dbType))
+            {
+                _dbType = dbType;
+            }
+            else
             {
                 /*
                  * In theory, the IConvertible interfact should restrict the _valueType to be one of 
@@ -60,11 +68,7 @@ namespace Elegance.Core.Data
                  * they want to use as a parameter. Perhaps define some sort of default behaviour?
                  */
 
-                throw new ArgumentException($"Type '{_valueType.Name}' does not have a standard conversion to '{nameof(DbType)}' available");
-            }
-            else
-            {
-                _dbType = dbType;
+                throw new ArgumentException($"Neither type '{type.Name}' or its related underlying types have a standard conversion to '{nameof(DbType)}' available");
             }
 
         }

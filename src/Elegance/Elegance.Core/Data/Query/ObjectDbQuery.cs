@@ -27,9 +27,22 @@ namespace Elegance.Core.Data.Query
                 foreach (PropertyInfo property in typeof(T).GetProperties())
                 {
                     var value = reader[property.Name];
-                    var convertedValue = Convert.ChangeType(value, property.PropertyType);
+                    var type = property.PropertyType;
 
-                    property.SetValue(result, convertedValue);
+                    if (type.IsEnum)
+                    {
+                        var underlyingType = type.GetEnumUnderlyingType();
+                        var convertedUnderlyingValue = Convert.ChangeType(value, underlyingType);
+                        var convertedValue = Enum.Parse(type, convertedUnderlyingValue.ToString());
+
+                        property.SetValue(result, convertedValue);
+                    }
+                    else
+                    {
+                        var convertedValue = Convert.ChangeType(value, type);
+
+                        property.SetValue(result, convertedValue);
+                    }
                 }
 
                 results.Add(result);
