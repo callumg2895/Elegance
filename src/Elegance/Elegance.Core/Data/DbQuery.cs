@@ -8,26 +8,37 @@ using System.Text;
 
 namespace Elegance.Core.Data
 {
-    internal abstract class DbQuery<T> : IDbQuery<T>
+    internal abstract class DbQuery<T> : IDbQuery<T>, IDisposable
     {
-        private readonly IList<IDbQueryParameter> _parameters;
+        private class DbQueryParameterOptions : IDbQueryParameterOptions
+        {
+            public DbType? DbTypeOverride { get; set; }
+            public ParameterDirection? DirectionOverride { get; set; }
+            public int? SizeOverride { get; set; }
+        }
+
+        private readonly IDictionary<string, IDbDataParameter> _parametersLookup;
+
         private readonly IDbConnection _connection;
         private readonly IDbTransaction _transaction;
+        private readonly IDbCommand _command;
 
-        private readonly string _sql;
-
-        internal DbQuery(IDbConnection connection, IDbTransaction transaction, string sql)
+        internal DbQuery(IDbConnection connection, IDbTransaction transaction, string commandText, CommandType commandType)
         {
             if (connection == null || connection.State != ConnectionState.Open)
             {
                 throw new ArgumentException("Cannot create a Query on a closed connection.");
             }
 
-            _parameters = new List<IDbQueryParameter>();
+            _parametersLookup = new Dictionary<string, IDbDataParameter>();
             _connection = connection;
             _transaction = transaction;
 
-            _sql = sql;
+            _command = _connection.CreateCommand();
+
+            _command.Transaction = _transaction;
+            _command.CommandText = commandText;
+            _command.CommandType = commandType;
         }
 
         public virtual T Result()
@@ -37,7 +48,7 @@ namespace Elegance.Core.Data
 
         public virtual IList<T> Results()
         {
-            using var command = CreateCommand();
+            using var command = _command;
             using var reader = command.ExecuteReader();
 
             return GetResultFromReader(reader);
@@ -45,36 +56,58 @@ namespace Elegance.Core.Data
 
         public IDbQuery<T> SetParameter<TParam>(string name, TParam value) where TParam : IConvertible
         {
-            return SetParameter(name, value, null);
+            return SetParameter(name, value, null, null);
         }
 
         public IDbQuery<T> SetParameter<TParam>(string name, TParam value, DbType? dbTypeOverride) where TParam : IConvertible
         {
-            var parameter = new DbQueryParameter<TParam>(name, value, dbTypeOverride);
+            return SetParameter(name, value, dbTypeOverride, null);
+        }
 
-            _parameters.Add(parameter);
+        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, ParameterDirection? directionOverride) where TParam : IConvertible
+        {
+            return SetParameter(name, value, null, directionOverride);
+        }
+
+        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, DbType? dbTypeOverride, ParameterDirection? directionOverride) where TParam : IConvertible
+        {
+            var options = new DbQueryParameterOptions()
+            {
+                DbTypeOverride = dbTypeOverride,
+                DirectionOverride = directionOverride,
+                SizeOverride = null,
+            };
+
+            return SetParameter(name, value, options);
+        }
+
+        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, IDbQueryParameterOptions options) where TParam : IConvertible
+        {
+            UpdateCommandParameters(new DbQueryParameter<TParam>(name, value, options));
 
             return this;
         }
 
-        protected IDbCommand CreateCommand()
+        public TParam GetParameter<TParam>(string name) where TParam : IConvertible
         {
-            var command = _connection.CreateCommand();
+            return _parametersLookup.TryGetValue(name, out IDbDataParameter dbDataParameter)
+                ? (TParam)dbDataParameter.Value
+                : default;
+        }
 
-            command.Transaction = _transaction;
-            command.CommandText = _sql;
-            command.CommandType = CommandType.Text;
+        private void UpdateCommandParameters(IDbQueryParameter dbQueryParameter)
+        {
+            var dbDataParameter = dbQueryParameter.AddToCommand(_command);
+            var dbDataParameterName = dbQueryParameter.Name;
 
-            foreach (var parameter in _parameters)
-            {
-                parameter.AddToCommand(command);
-            }
-
-            _parameters.Clear();
-
-            return command;
+            _parametersLookup.Add(dbDataParameterName, dbDataParameter);
         }
 
         protected abstract IList<T> GetResultFromReader(IDataReader reader);
+
+        public void Dispose()
+        {
+            _command?.Dispose();
+        }
     }
 }

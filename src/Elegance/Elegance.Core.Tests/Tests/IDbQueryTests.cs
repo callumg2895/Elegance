@@ -117,6 +117,29 @@ namespace Elegance.Core.Tests.Tests
             Assert.AreEqual(expectedResult, actualResult, $"Expected type '{expectedResult}', but got type '{actualResult}'");
         }
 
+        /// <summary>
+        /// Test Method: Test005_WhenReadingReferenceTypeResultFromRawSQLWithOutParameters_OutParametersShouldBeReturned:
+        /// 
+        /// When a raw SQL select statement is passed to the CreateQuery method with out parameters specified, the 
+        /// values of the out parameters should be accessible from the query object.
+        /// </summary>
+        [TestMethod]
+        public void Test005_WhenReadingReferenceTypeResultFromRawSQLWithOutParameters_OutParametersShouldBeReturned()
+        {
+            // Arrange
+            var testEntity = GenerateTestEntity();
+            _testEntityARepository.InsertTestEntity(testEntity);
+
+            AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
+
+            // Act
+            var expectedResults = _testEntityARepository.GetAll_Query_StoredProcedure(out int status, out string message);
+
+            // Assert
+            Assert.AreEqual(0, status, $"Expected {nameof(status)} to be '{0}', but got '{status}'");
+            Assert.AreEqual("success", message, $"Expected {nameof(message)} to be 'success', but got '{message}'");
+        }
+
         private TestEntityA GenerateTestEntity()
         {
             seed++;

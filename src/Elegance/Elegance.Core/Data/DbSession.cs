@@ -14,7 +14,7 @@ namespace Elegance.Core.Data
     internal class DbSession : IDbSession
     {
         private readonly IDbConnectionFactory _dbConnectionFactory;
-        private readonly List<IDbCommand> _dbCommands;
+        private readonly IList<IDisposable> _disposables;
         private readonly IDbConnection _dbConnection;
 
         private IDbTransaction _dbTransaction;
@@ -22,7 +22,7 @@ namespace Elegance.Core.Data
         internal DbSession(IDbConnectionFactory dbConnectionFactory)
         {
             _dbConnectionFactory = dbConnectionFactory;
-            _dbCommands = new List<IDbCommand>();
+            _disposables = new List<IDisposable>();
             _dbConnection = _dbConnectionFactory.CreateConnection();
         }
 
@@ -45,26 +45,34 @@ namespace Elegance.Core.Data
             command.CommandText = sql;
             command.CommandType = CommandType.Text;
 
-            _dbCommands.Add(command);
+            _disposables.Add(command);
 
             return command;
         }
 
-        public IDbQuery<T> CreateObjectQuery<T>(string sql) where T : new()
+        public IDbQuery<T> CreateObjectQuery<T>(string commandText, CommandType commandType) where T : new()
         {
-            return new ObjectDbQuery<T>(_dbConnection, _dbTransaction, sql);
+            var query = new ObjectDbQuery<T>(_dbConnection, _dbTransaction, commandText, commandType);
+
+            _disposables.Add(query);
+
+            return query;
         }
 
-        public IDbQuery<T> CreateScalarQuery<T>(string sql) where T : IConvertible
+        public IDbQuery<T> CreateScalarQuery<T>(string commandText, CommandType commandType) where T : IConvertible
         {
-            return new ScalarDbQuery<T>(_dbConnection, _dbTransaction, sql);
+            var query = new ScalarDbQuery<T>(_dbConnection, _dbTransaction, commandText, commandType);
+
+            _disposables.Add(query);
+
+            return query;
         }
 
         public void Dispose()
         {
-            foreach (var command in _dbCommands)
+            foreach (var disposable in _disposables)
             {
-                command.Dispose();
+                disposable?.Dispose();
             }
 
             _dbTransaction?.Dispose();

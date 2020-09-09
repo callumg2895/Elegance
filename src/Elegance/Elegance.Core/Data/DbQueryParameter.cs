@@ -9,7 +9,7 @@ namespace Elegance.Core.Data
     internal class DbQueryParameter<T> : IDbQueryParameter
         where T : IConvertible
     {
-        private protected readonly static Dictionary<Type, DbType> _dbTypeMappings;
+        private readonly static Dictionary<Type, DbType> _dbTypeMappings;
 
         static DbQueryParameter()
         {
@@ -34,24 +34,30 @@ namespace Elegance.Core.Data
             };
         }
 
-        private protected readonly Type _valueType;
-        private protected readonly string _name;
-        private protected readonly T _value;
-        private protected readonly DbType _dbType;
+        public string Name { get; private set; }
 
-        internal DbQueryParameter(string name, T value, DbType? dbTypeOverride = null)
+        private readonly Type _valueType;
+        private readonly T _value;
+        private readonly DbType _dbType;
+        private readonly ParameterDirection? _direction;
+        private readonly int? _size;
+
+        internal DbQueryParameter(string name, T value, IDbQueryParameterOptions options)
         {
             var type = typeof(T);
 
-            _name = name;
+            Name = name;
+
             _value = value;
             _valueType = type.IsEnum
                 ? type.GetEnumUnderlyingType()
                 : type;
+            _direction = options?.DirectionOverride;
+            _size = options?.SizeOverride ?? InterpretSize();
 
-            if (dbTypeOverride.HasValue)
+            if (options != null && options.DbTypeOverride.HasValue)
             {
-                _dbType = dbTypeOverride.Value;
+                _dbType = options.DbTypeOverride.Value;
             }
             else if (_dbTypeMappings.TryGetValue(_valueType, out var dbType))
             {
@@ -59,29 +65,46 @@ namespace Elegance.Core.Data
             }
             else
             {
-                /*
-                 * In theory, the IConvertible interfact should restrict the _valueType to be one of 
-                 * the primitive C# types, or a string (one of the rare few reference types that implements
-                 * the IConvertible interface. So we shouldn't get here under normal circumstances.
-                 * 
-                 * TODO - work out what to do if this test fails, i.e the user defines their own type that
-                 * they want to use as a parameter. Perhaps define some sort of default behaviour?
-                 */
-
-                throw new ArgumentException($"Neither type '{type.Name}' or its related underlying types have a standard conversion to '{nameof(DbType)}' available");
+                throw new ArgumentException($"No override was provided for '{nameof(DbType)}', and neither type '{type.Name}' or its related underlying types have a standard conversion to '{nameof(DbType)}' available");
             }
-
         }
 
-        public void AddToCommand(IDbCommand command)
+        public IDbDataParameter AddToCommand(IDbCommand command)
         {
             var commandParameter = command.CreateParameter();
 
-            commandParameter.ParameterName = _name;
+            commandParameter.ParameterName = Name;
             commandParameter.Value = _value;
             commandParameter.DbType = _dbType;
 
+            if (_direction.HasValue)
+            {
+                commandParameter.Direction = _direction.Value;
+            }
+
+            if (_size.HasValue)
+            {
+                commandParameter.Size = _size.Value;
+            }
+
             command.Parameters.Add(commandParameter);
+
+            return commandParameter;
+        }
+
+        private int? InterpretSize()
+        {
+            if (_valueType == typeof(string))
+            {
+                var valueString = (_value as string);
+                var valueSize = string.IsNullOrEmpty(valueString)
+                    ? -1
+                    : valueString.ToCharArray().Length;
+
+                return valueSize;
+            }
+
+            return null;
         }
     }
 }

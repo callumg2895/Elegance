@@ -8,8 +8,8 @@ namespace Elegance.Core.Data.Query
 {
     internal class ScalarDbQuery<T> : DbQuery<T> where T : IConvertible
     {
-        internal ScalarDbQuery(IDbConnection connection, IDbTransaction transaction, string sql)
-            : base(connection, transaction, sql)
+        internal ScalarDbQuery(IDbConnection connection, IDbTransaction transaction, string commandText, CommandType commandType)
+            : base(connection, transaction, commandText, commandType)
         {
 
         }

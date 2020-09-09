@@ -10,8 +10,8 @@ namespace Elegance.Core.Data.Query
 {
     internal class ObjectDbQuery<T> : DbQuery<T> where T : new()
     {
-        internal ObjectDbQuery(IDbConnection connection, IDbTransaction transaction, string sql)
-            : base(connection, transaction, sql)
+        internal ObjectDbQuery(IDbConnection connection, IDbTransaction transaction, string commandText, CommandType commandType)
+            : base(connection, transaction, commandText, commandType)
         {
 
         }

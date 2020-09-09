@@ -6,47 +6,50 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Text;
 using Elegance.Core.Tests.Data.TestRepository;
+using System.IO;
+using System.Reflection;
 
 namespace Elegance.Core.Tests
 {
     [TestClass]
     public abstract class TestBase
     {
-        protected static readonly string _connectionString;
+        private static readonly Queue<Action> _cleanupActions;
 
-        private readonly Queue<Action> _cleanupActions;
-
-        protected readonly TestEntityARepository _testEntityARepository;
-
+        protected static readonly ResourceRepository _resourceRepository;
+        protected static readonly TestEntityARepository _testEntityARepository;
 
         static TestBase()
         {
-            _connectionString = ConfigurationManager.AppSettings["connectionString"];
+            _cleanupActions = new Queue<Action>();
+
+            _resourceRepository = new ResourceRepository();
+            _testEntityARepository = new TestEntityARepository();
         }
 
         public TestBase()
         {
-            _cleanupActions = new Queue<Action>();
 
-            _testEntityARepository = new TestEntityARepository();
         }
 
         [AssemblyInitialize]
         public static void AssemblyInitialize(TestContext context)
         {
-
+            _testEntityARepository.CreateTable();
+            _resourceRepository.LoadStoredProcedure("GetTestEntityAItems");
         }
 
         [AssemblyCleanup]
         public static void AssemblyCleanup()
         {
-
+            _resourceRepository.UnloadStoredProcedures("GetTestEntityAItems");
+            _testEntityARepository.DropTable();
         }
 
         [TestInitialize]
         public void TestInitialize()
         {
-            _testEntityARepository.CreateTable();
+            
         }
 
         [TestCleanup]
@@ -56,8 +59,6 @@ namespace Elegance.Core.Tests
             {
                 action();
             }
-
-            _testEntityARepository.DropTable();
         }
 
         protected void AddCleanupAction(Action action)

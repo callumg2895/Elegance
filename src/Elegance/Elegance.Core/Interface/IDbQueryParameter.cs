@@ -7,6 +7,8 @@ namespace Elegance.Core.Interface
 {
     public interface IDbQueryParameter
     {
-        public void AddToCommand(IDbCommand command);
+        public string Name { get; }
+
+        public IDbDataParameter AddToCommand(IDbCommand command);
     }
 }
