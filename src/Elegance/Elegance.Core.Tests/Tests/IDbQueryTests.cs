@@ -45,7 +45,7 @@ namespace Elegance.Core.Tests.Tests
 
             for (int i = 0; i < expectedResults.Count; i++)
             {
-                Assert.IsTrue(TestEntityA.AreEqual(expectedResults[i], actualResults[i]), "Expected entities to be equal");
+                AssertAreEqual(expectedResults[i], actualResults[i]);
             }
         }
 
@@ -69,7 +69,7 @@ namespace Elegance.Core.Tests.Tests
 
             // Assert
             Assert.AreEqual(expectedResult.GetType(), actualResult.GetType(), $"Expected type '{expectedResult.GetType().Name}', but got type '{actualResult.GetType().Name}'");
-            Assert.IsTrue(TestEntityA.AreEqual(expectedResult, actualResult), "Expected entities to be equal");
+            AssertAreEqual(expectedResult, actualResult);
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace Elegance.Core.Tests.Tests
             Assert.AreEqual(0, status, $"Expected {nameof(status)} to be '{0}', but got '{status}'");
             Assert.AreEqual("success", message, $"Expected {nameof(message)} to be 'success', but got '{message}'");
             Assert.AreEqual(1, results.Count);
-            Assert.IsTrue(TestEntityA.AreEqual(testEntity, results[0]), "Expected entities to be equal");
+            AssertAreEqual(testEntity, results[0]);
         }
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace Elegance.Core.Tests.Tests
             // Assert
             Assert.AreEqual(0, status, $"Expected {nameof(status)} to be '{0}', but got '{status}'");
             Assert.AreEqual("success", message, $"Expected {nameof(message)} to be 'success', but got '{message}'");
-            Assert.IsTrue(TestEntityA.AreEqual(testEntity, result), "Expected entities to be equal");
+            AssertAreEqual(testEntity, result);
         }
 
         private TestEntityA GenerateTestEntity(bool insert = true)
@@ -186,6 +186,17 @@ namespace Elegance.Core.Tests.Tests
             }
 
             return testEntity;
+        }
+
+        private void AssertAreEqual(TestEntityA expected, TestEntityA actual)
+        {
+            Assert.AreEqual(expected.PropertyBigInt, actual.PropertyBigInt, $"Expected {expected.PropertyBigInt}, but got {actual.PropertyBigInt} for {nameof(TestEntityA.PropertyBigInt)}");
+            Assert.AreEqual(expected.PropertyInt, actual.PropertyInt, $"Expected {expected.PropertyInt}, but got {actual.PropertyInt} for {nameof(TestEntityA.PropertyInt)}");
+            Assert.AreEqual(expected.PropertySmallInt, actual.PropertySmallInt, $"Expected {expected.PropertySmallInt}, but got {actual.PropertySmallInt} for {nameof(TestEntityA.PropertySmallInt)}");
+            Assert.AreEqual(expected.PropertyTinyInt, actual.PropertyTinyInt, $"Expected {expected.PropertyTinyInt}, but got {actual.PropertyTinyInt} for {nameof(TestEntityA.PropertyTinyInt)}");
+            Assert.AreEqual(expected.PropertyVarChar, actual.PropertyVarChar, $"Expected {expected.PropertyVarChar}, but got {actual.PropertyVarChar} for {nameof(TestEntityA.PropertyVarChar)}");
+            Assert.AreEqual(expected.PropertyDateTime, actual.PropertyDateTime, $"Expected {expected.PropertyDateTime}, but got {actual.PropertyDateTime} for {nameof(TestEntityA.PropertyDateTime)}");
+            Assert.AreEqual(expected.PropertyEnum, actual.PropertyEnum, $"Expected {expected.PropertyEnum}, but got {actual.PropertyEnum} for {nameof(TestEntityA.PropertyEnum)}");
         }
     }
 }

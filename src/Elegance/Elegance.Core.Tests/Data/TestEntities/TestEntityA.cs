@@ -21,16 +21,5 @@ namespace Elegance.Core.Tests.Data.TestEntities
         public string PropertyVarChar { get; set; }
         public DateTime PropertyDateTime { get; set; }
         public TestEnumA PropertyEnum { get; set; }
-
-        public static bool AreEqual(TestEntityA expected, TestEntityA actual)
-        {
-            return expected.PropertyBigInt == actual.PropertyBigInt
-                && expected.PropertyInt == actual.PropertyInt
-                && expected.PropertySmallInt == actual.PropertySmallInt
-                && expected.PropertyTinyInt == actual.PropertyTinyInt
-                && expected.PropertyVarChar == actual.PropertyVarChar
-                && expected.PropertyDateTime == actual.PropertyDateTime
-                && expected.PropertyEnum == actual.PropertyEnum;
-        }
     }
 }
