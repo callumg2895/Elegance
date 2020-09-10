@@ -28,8 +28,10 @@ namespace Elegance.Core.Tests.Tests
         public void Test001_WhenReadingReferenceTypeResultFromRawSQL_ResultShouldMatchStandardReaderResult()
         {
             // Arrange
-            var testEntity = GenerateTestEntity();
-            _testEntityARepository.InsertTestEntity(testEntity);
+            for (int i = 0; i < 10; i++)
+            {
+                GenerateTestEntity();
+            }
 
             AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
 
@@ -58,7 +60,6 @@ namespace Elegance.Core.Tests.Tests
         {
             // Arrange
             var testEntity = GenerateTestEntity();
-            _testEntityARepository.InsertTestEntity(testEntity);
 
             AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
 
@@ -81,9 +82,8 @@ namespace Elegance.Core.Tests.Tests
         public void Test003_WhenReadingReferenceTypeResultFromRawSQLWithInvalidParameters_ResultShouldBeNull()
         {
             // Arrange
-            var testEntity = GenerateTestEntity();
-            var testEntity2 = GenerateTestEntity();
-            _testEntityARepository.InsertTestEntity(testEntity);
+            var testEntity = GenerateTestEntity(insert: true);
+            var testEntity2 = GenerateTestEntity(insert: false);
 
             AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
 
@@ -105,7 +105,6 @@ namespace Elegance.Core.Tests.Tests
         {
             // Arrange
             var testEntity = GenerateTestEntity();
-            _testEntityARepository.InsertTestEntity(testEntity);
 
             AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
 
@@ -114,17 +113,43 @@ namespace Elegance.Core.Tests.Tests
             var actualResult = _testEntityARepository.GetAllCount_Query();
 
             // Assert
-            Assert.AreEqual(expectedResult, actualResult, $"Expected type '{expectedResult}', but got type '{actualResult}'");
+            Assert.AreEqual(expectedResult, actualResult, $"Expected '{expectedResult}', but got '{actualResult}'");
         }
 
         /// <summary>
-        /// Test Method: Test005_WhenReadingReferenceTypeResultFromRawSQLWithOutParameters_OutParametersShouldBeReturned:
+        /// Test Method: Test005_WhenReadingReferenceTypeResultFromStoredProcedureWithOutParameters_OutParametersShouldBeReturnedAlongsideResult:
         /// 
-        /// When a raw SQL select statement is passed to the CreateQuery method with out parameters specified, the 
-        /// values of the out parameters should be accessible from the query object.
+        /// When a stored procedure is passed to the CreateQuery method with out parameters specified, the values 
+        /// of the out parameters should be accessible from the query object, as well as the results of the query 
+        /// itself.
         /// </summary>
         [TestMethod]
-        public void Test005_WhenReadingReferenceTypeResultFromRawSQLWithOutParameters_OutParametersShouldBeReturned()
+        public void Test005_WhenReadingReferenceTypeResultFromStoredProcedureWithOutParameters_OutParametersShouldBeReturnedAlongsideResult()
+        {
+            // Arrange
+            var testEntity = GenerateTestEntity();
+
+            AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
+
+            // Act
+            var results = _testEntityARepository.GetAll_Query_StoredProcedure(out int status, out string message);
+
+            // Assert
+            Assert.AreEqual(0, status, $"Expected {nameof(status)} to be '{0}', but got '{status}'");
+            Assert.AreEqual("success", message, $"Expected {nameof(message)} to be 'success', but got '{message}'");
+            Assert.AreEqual(1, results.Count);
+            Assert.IsTrue(TestEntityA.AreEqual(testEntity, results[0]), "Expected entities to be equal");
+        }
+
+        /// <summary>
+        /// Test Method: Test006_WhenReadingReferenceTypeResultFromStoredProcedureWithInAndOutParameters_OutParametersShouldBeReturnedAlongsideResult:
+        /// 
+        /// When a stored procedure is passed to the CreateQuery method with in and out parameters specified, the 
+        /// values of the out parameters should be accessible from the query object, as well as the results of the
+        /// query itself.
+        /// </summary>
+        [TestMethod]
+        public void Test006_WhenReadingReferenceTypeResultFromStoredProcedureWithInAndOutParameters_OutParametersShouldBeReturnedAlongsideResult()
         {
             // Arrange
             var testEntity = GenerateTestEntity();
@@ -133,18 +158,19 @@ namespace Elegance.Core.Tests.Tests
             AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
 
             // Act
-            var expectedResults = _testEntityARepository.GetAll_Query_StoredProcedure(out int status, out string message);
+            var result = _testEntityARepository.GetByAllProperties_Query_StoredProcedure(testEntity, out int status, out string message);
 
             // Assert
             Assert.AreEqual(0, status, $"Expected {nameof(status)} to be '{0}', but got '{status}'");
             Assert.AreEqual("success", message, $"Expected {nameof(message)} to be 'success', but got '{message}'");
+            Assert.IsTrue(TestEntityA.AreEqual(testEntity, result), "Expected entities to be equal");
         }
 
-        private TestEntityA GenerateTestEntity()
+        private TestEntityA GenerateTestEntity(bool insert = true)
         {
             seed++;
 
-            return new TestEntityA()
+            var testEntity = new TestEntityA()
             {
                 PropertyBigInt = seed,
                 PropertyInt = seed,
@@ -153,6 +179,13 @@ namespace Elegance.Core.Tests.Tests
                 PropertyVarChar = $"{seed}",
                 PropertyDateTime = DateTime.Now.AddDays(seed)
             };
+
+            if (insert)
+            {
+                _testEntityARepository.InsertTestEntity(testEntity);
+            }
+
+            return testEntity;
         }
     }
 }

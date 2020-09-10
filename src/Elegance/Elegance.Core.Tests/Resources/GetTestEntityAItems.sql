@@ -8,7 +8,14 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE PROCEDURE [dbo].GetTestEntityAItems  @result_status	int				= null out,
-											@result_message varchar(255)	= null out
+											@result_message varchar(255)	= null out,
+                                            @property_bigint bigint         = null,
+                                            @property_int int               = null,
+                                            @property_smallint smallint     = null,
+                                            @property_tinyint tinyint       = null,
+                                            @property_varchar varchar(255)  = null,
+                                            @property_datetime datetime2    = null,
+                                            @property_enum int              = null
 AS
 BEGIN
     set @result_status = 0;
@@ -23,5 +30,14 @@ BEGIN
             tea.property_enum        AS PropertyEnum
 
     FROM    test_entity_a tea (NOLOCK)
+
+    WHERE   0=0
+    AND     tea.property_bigint = COALESCE(@property_bigint, tea.property_bigint)
+    AND     tea.property_int = COALESCE(@property_int, tea.property_int)
+    AND     tea.property_smallint = COALESCE(@property_smallint, tea.property_smallint)
+    AND     tea.property_tinyint = COALESCE(@property_tinyint, tea.property_tinyint)
+    AND     tea.property_varchar = COALESCE(@property_varchar, tea.property_varchar)
+    AND     tea.property_datetime = COALESCE(@property_datetime, tea.property_datetime)
+    AND     tea.property_enum = COALESCE(@property_enum, tea.property_enum)
 END
 GO

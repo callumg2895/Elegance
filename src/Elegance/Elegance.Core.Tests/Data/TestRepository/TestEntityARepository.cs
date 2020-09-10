@@ -81,8 +81,8 @@ namespace Elegance.Core.Tests.Data.TestRepository
 
             var query = session
                 .CreateObjectQuery<TestEntityA>("GetTestEntityAItems", CommandType.StoredProcedure)
-                .SetParameter<Int32>("@result_status", 1, ParameterDirection.Output)
-                .SetParameter<String>("@result_message", null, null, ParameterDirection.Output);
+                .SetParameter("@result_status", 1, ParameterDirection.Output)
+                .SetParameter<String>("@result_message", null, ParameterDirection.Output);
                 
             var results = query.Results();
 
@@ -148,15 +148,40 @@ namespace Elegance.Core.Tests.Data.TestRepository
 
             return session
                 .CreateObjectQuery<TestEntityA>(sql, CommandType.Text)
-                .SetParameter<Int64>("@property_bigint", testEntity.PropertyBigInt)
-                .SetParameter<Int32>("@property_int", testEntity.PropertyInt)
-                .SetParameter<Int16>("@property_smallint", testEntity.PropertySmallInt)
-                .SetParameter<Byte>("@property_tinyint", testEntity.PropertyTinyInt)
-                .SetParameter<String>("@property_varchar", testEntity.PropertyVarChar)
-                .SetParameter<DateTime>("@property_datetime", testEntity.PropertyDateTime)
-                .SetParameter<TestEnumA>("@property_enum", testEntity.PropertyEnum)
+                .SetParameter("@property_bigint", testEntity.PropertyBigInt)
+                .SetParameter("@property_int", testEntity.PropertyInt)
+                .SetParameter("@property_smallint", testEntity.PropertySmallInt)
+                .SetParameter("@property_tinyint", testEntity.PropertyTinyInt)
+                .SetParameter("@property_varchar", testEntity.PropertyVarChar)
+                .SetParameter("@property_datetime", testEntity.PropertyDateTime)
+                .SetParameter("@property_enum", testEntity.PropertyEnum)
                 .Result();
         }
+
+        public TestEntityA GetByAllProperties_Query_StoredProcedure(TestEntityA testEntity, out int status, out string message)
+        {
+            using var session = CreateSession();
+
+            var query = session
+                .CreateObjectQuery<TestEntityA>("GetTestEntityAItems", CommandType.StoredProcedure)
+                .SetParameter("@result_status", 1, ParameterDirection.Output)
+                .SetParameter<String>("@result_message", null, ParameterDirection.Output)
+                .SetParameter("@property_bigint", testEntity.PropertyBigInt)
+                .SetParameter("@property_int", testEntity.PropertyInt)
+                .SetParameter("@property_smallint", testEntity.PropertySmallInt)
+                .SetParameter("@property_tinyint", testEntity.PropertyTinyInt)
+                .SetParameter("@property_varchar", testEntity.PropertyVarChar)
+                .SetParameter("@property_datetime", testEntity.PropertyDateTime)
+                .SetParameter("@property_enum", testEntity.PropertyEnum);
+
+            var result = query.Result();
+
+            status = query.GetParameter<Int32>("@result_status");
+            message = query.GetParameter<String>("@result_message");
+
+            return result;
+        }
+
 
         public TestEntityA GetByAllProperties_Standard(TestEntityA testEntity)
         {
@@ -168,6 +193,7 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 .AppendLine("and tea.property_tinyint = @property_tinyint")
                 .AppendLine("and tea.property_varchar = @property_varchar")
                 .AppendLine("and tea.property_datetime = @property_datetime")
+                .AppendLine("and tea.property_enum = @property_enum")
                 .ToString();
 
             using var session = CreateSession();
@@ -179,6 +205,7 @@ namespace Elegance.Core.Tests.Data.TestRepository
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_tinyint", Value = testEntity.PropertyTinyInt, DbType = DbType.Byte });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_varchar", Value = testEntity.PropertyVarChar, DbType = DbType.AnsiString });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_datetime", Value = testEntity.PropertyDateTime, DbType = DbType.DateTime2 });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_enum", Value = (int)testEntity.PropertyEnum, DbType = DbType.Int32 });
 
             using var reader = command.ExecuteReader();
 
