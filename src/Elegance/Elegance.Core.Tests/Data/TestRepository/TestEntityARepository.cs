@@ -11,13 +11,16 @@ namespace Elegance.Core.Tests.Data.TestRepository
     public class TestEntityARepository : BaseRepository
     {
         private const string _testEntitySelectText = @"
-                select  tea.property_bigint      as PropertyBigInt,
-                        tea.property_int         as PropertyInt,
-                        tea.property_smallint    as PropertySmallInt,
-                        tea.property_tinyint     as PropertyTinyInt,
-                        tea.property_varchar     as PropertyVarChar,
-                        tea.property_datetime    as PropertyDateTime,
-                        tea.property_enum        as PropertyEnum
+                select  tea.property_bigint         as PropertyBigInt,
+                        tea.property_int            as PropertyInt,
+                        tea.property_smallint       as PropertySmallInt,
+                        tea.property_tinyint        as PropertyTinyInt,
+                        tea.property_real           as PropertyReal,
+                        tea.property_float          as PropertyFloat,
+                        tea.property_decimal        as PropertyDecimal,
+                        tea.property_varchar        as PropertyVarChar,
+                        tea.property_datetime       as PropertyDateTime,
+                        tea.property_enum           as PropertyEnum
 
                 from    test_entity_a tea (nolock)";
 
@@ -45,6 +48,9 @@ namespace Elegance.Core.Tests.Data.TestRepository
                         property_int        int,
                         property_smallint   smallint,
                         property_tinyint    tinyint,
+                        property_real       real,
+                        property_float      float,
+                        property_decimal    decimal,
                         property_varchar    varchar(255),
                         property_datetime   datetime2,
                         property_enum       int
@@ -139,6 +145,9 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 .AppendLine("and tea.property_int = @property_int")
                 .AppendLine("and tea.property_smallint = @property_smallint")
                 .AppendLine("and tea.property_tinyint = @property_tinyint")
+                .AppendLine("and tea.property_real = @property_real")
+                .AppendLine("and tea.property_float = @property_float")
+                .AppendLine("and tea.property_decimal = @property_decimal")
                 .AppendLine("and tea.property_varchar = @property_varchar")
                 .AppendLine("and tea.property_datetime = @property_datetime")
                 .AppendLine("and tea.property_enum = @property_enum")
@@ -152,6 +161,9 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 .SetParameter("@property_int", testEntity.PropertyInt)
                 .SetParameter("@property_smallint", testEntity.PropertySmallInt)
                 .SetParameter("@property_tinyint", testEntity.PropertyTinyInt)
+                .SetParameter("@property_real", testEntity.PropertyReal)
+                .SetParameter("@property_float", testEntity.PropertyFloat)
+                .SetParameter("@property_decimal", testEntity.PropertyDecimal)
                 .SetParameter("@property_varchar", testEntity.PropertyVarChar)
                 .SetParameter("@property_datetime", testEntity.PropertyDateTime)
                 .SetParameter("@property_enum", testEntity.PropertyEnum)
@@ -170,6 +182,9 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 .SetParameter("@property_int", testEntity.PropertyInt)
                 .SetParameter("@property_smallint", testEntity.PropertySmallInt)
                 .SetParameter("@property_tinyint", testEntity.PropertyTinyInt)
+                .SetParameter("@property_real", testEntity.PropertyReal)
+                .SetParameter("@property_float", testEntity.PropertyFloat)
+                .SetParameter("@property_decimal", testEntity.PropertyDecimal)
                 .SetParameter("@property_varchar", testEntity.PropertyVarChar)
                 .SetParameter("@property_datetime", testEntity.PropertyDateTime)
                 .SetParameter("@property_enum", testEntity.PropertyEnum);
@@ -182,7 +197,6 @@ namespace Elegance.Core.Tests.Data.TestRepository
             return result;
         }
 
-
         public TestEntityA GetByAllProperties_Standard(TestEntityA testEntity)
         {
             var sql = new StringBuilder()
@@ -191,6 +205,9 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 .AppendLine("and tea.property_int = @property_int")
                 .AppendLine("and tea.property_smallint = @property_smallint")
                 .AppendLine("and tea.property_tinyint = @property_tinyint")
+                .AppendLine("and tea.property_real = @property_real")
+                .AppendLine("and tea.property_float = @property_float")
+                .AppendLine("and tea.property_decimal = @property_decimal")
                 .AppendLine("and tea.property_varchar = @property_varchar")
                 .AppendLine("and tea.property_datetime = @property_datetime")
                 .AppendLine("and tea.property_enum = @property_enum")
@@ -203,6 +220,9 @@ namespace Elegance.Core.Tests.Data.TestRepository
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_int", Value = testEntity.PropertyInt, DbType = DbType.Int32 });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_smallint", Value = testEntity.PropertySmallInt, DbType = DbType.Int16 });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_tinyint", Value = testEntity.PropertyTinyInt, DbType = DbType.Byte });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_real", Value = testEntity.PropertyReal, DbType = DbType.Single });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_float", Value = testEntity.PropertyFloat, DbType = DbType.Double });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_decimal", Value = testEntity.PropertyDecimal, DbType = DbType.Decimal });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_varchar", Value = testEntity.PropertyVarChar, DbType = DbType.AnsiString });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_datetime", Value = testEntity.PropertyDateTime, DbType = DbType.DateTime2 });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_enum", Value = (int)testEntity.PropertyEnum, DbType = DbType.Int32 });
@@ -226,6 +246,9 @@ namespace Elegance.Core.Tests.Data.TestRepository
                         property_int        ,
                         property_smallint   ,
                         property_tinyint    ,
+                        property_real      ,
+                        property_float     ,
+                        property_decimal    ,
                         property_varchar    ,
                         property_datetime   ,
                         property_enum
@@ -236,6 +259,9 @@ namespace Elegance.Core.Tests.Data.TestRepository
                     @property_int,
                     @property_smallint,
                     @property_tinyint,
+                    @property_real,
+                    @property_float,
+                    @property_decimal,
                     @property_varchar,
                     @property_datetime,
                     @property_enum
@@ -249,6 +275,9 @@ namespace Elegance.Core.Tests.Data.TestRepository
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_smallint", Value = testEntity.PropertySmallInt, DbType = DbType.Int16 });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_tinyint", Value = testEntity.PropertyTinyInt, DbType = DbType.Byte });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_varchar", Value = testEntity.PropertyVarChar, DbType = DbType.AnsiString });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_real", Value = testEntity.PropertyReal, DbType = DbType.Single });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_float", Value = testEntity.PropertyFloat, DbType = DbType.Double });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_decimal", Value = testEntity.PropertyDecimal, DbType = DbType.Decimal });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_datetime", Value = testEntity.PropertyDateTime, DbType = DbType.DateTime2 });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_enum", Value = (int)testEntity.PropertyEnum, DbType = DbType.Int32 });
 
@@ -286,6 +315,9 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 entity.PropertyInt = (int)reader[nameof(entity.PropertyInt)];
                 entity.PropertySmallInt = (short)reader[nameof(entity.PropertySmallInt)];
                 entity.PropertyTinyInt = (byte)reader[nameof(entity.PropertyTinyInt)];
+                entity.PropertyReal = (float)reader[nameof(entity.PropertyReal)];
+                entity.PropertyFloat = (double)reader[nameof(entity.PropertyFloat)];
+                entity.PropertyDecimal = (decimal)reader[nameof(entity.PropertyDecimal)];
                 entity.PropertyVarChar = (string)reader[nameof(entity.PropertyVarChar)];
                 entity.PropertyDateTime = (DateTime)reader[nameof(entity.PropertyDateTime)];
                 entity.PropertyEnum = (TestEnumA)(int)reader[nameof(entity.PropertyEnum)];

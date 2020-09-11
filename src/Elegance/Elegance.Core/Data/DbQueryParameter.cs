@@ -29,7 +29,7 @@ namespace Elegance.Core.Data
                 { typeof(long),         DbType.Int64        },
                 { typeof(ulong),        DbType.UInt64       },
                 { typeof(double),       DbType.Double       },
-                { typeof(float),        DbType.Int16        },
+                { typeof(float),        DbType.Single        },
                 { typeof(decimal),      DbType.Decimal      },
             };
         }

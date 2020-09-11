@@ -176,6 +176,9 @@ namespace Elegance.Core.Tests.Tests
                 PropertyInt = seed,
                 PropertySmallInt = (short)(seed % short.MaxValue),
                 PropertyTinyInt = (byte)(seed % byte.MaxValue),
+                PropertyReal = seed/float.MaxValue,
+                PropertyFloat = seed/double.MaxValue,
+                PropertyDecimal = seed/decimal.MaxValue,
                 PropertyVarChar = $"{seed}",
                 PropertyDateTime = DateTime.Now.AddDays(seed)
             };
@@ -194,6 +197,9 @@ namespace Elegance.Core.Tests.Tests
             Assert.AreEqual(expected.PropertyInt, actual.PropertyInt, $"Expected {expected.PropertyInt}, but got {actual.PropertyInt} for {nameof(TestEntityA.PropertyInt)}");
             Assert.AreEqual(expected.PropertySmallInt, actual.PropertySmallInt, $"Expected {expected.PropertySmallInt}, but got {actual.PropertySmallInt} for {nameof(TestEntityA.PropertySmallInt)}");
             Assert.AreEqual(expected.PropertyTinyInt, actual.PropertyTinyInt, $"Expected {expected.PropertyTinyInt}, but got {actual.PropertyTinyInt} for {nameof(TestEntityA.PropertyTinyInt)}");
+            Assert.AreEqual(expected.PropertyReal, actual.PropertyReal, $"Expected {expected.PropertyReal}, but got {actual.PropertyReal} for {nameof(TestEntityA.PropertyReal)}");
+            Assert.AreEqual(expected.PropertyFloat, actual.PropertyFloat, $"Expected {expected.PropertyFloat}, but got {actual.PropertyFloat} for {nameof(TestEntityA.PropertyFloat)}");
+            Assert.AreEqual(expected.PropertyDecimal, actual.PropertyDecimal, $"Expected {expected.PropertyDecimal}, but got {actual.PropertyDecimal} for {nameof(TestEntityA.PropertyDecimal)}");
             Assert.AreEqual(expected.PropertyVarChar, actual.PropertyVarChar, $"Expected {expected.PropertyVarChar}, but got {actual.PropertyVarChar} for {nameof(TestEntityA.PropertyVarChar)}");
             Assert.AreEqual(expected.PropertyDateTime, actual.PropertyDateTime, $"Expected {expected.PropertyDateTime}, but got {actual.PropertyDateTime} for {nameof(TestEntityA.PropertyDateTime)}");
             Assert.AreEqual(expected.PropertyEnum, actual.PropertyEnum, $"Expected {expected.PropertyEnum}, but got {actual.PropertyEnum} for {nameof(TestEntityA.PropertyEnum)}");

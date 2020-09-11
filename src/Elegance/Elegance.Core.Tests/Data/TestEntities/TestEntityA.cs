@@ -18,6 +18,9 @@ namespace Elegance.Core.Tests.Data.TestEntities
         public int PropertyInt { get; set; }
         public short PropertySmallInt { get; set; }
         public byte PropertyTinyInt { get; set; }
+        public float PropertyReal { get; set; }
+        public double PropertyFloat { get; set; }
+        public decimal PropertyDecimal { get; set; }
         public string PropertyVarChar { get; set; }
         public DateTime PropertyDateTime { get; set; }
         public TestEnumA PropertyEnum { get; set; }
