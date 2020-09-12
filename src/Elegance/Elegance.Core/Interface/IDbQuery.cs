@@ -18,6 +18,8 @@ namespace Elegance.Core.Interface
 
         public IDbQuery<T> SetParameter<TParam>(string name, TParam value, IDbQueryParameterOptions options) where TParam : IConvertible;
 
+        public IDbQuery<T> SetParameter<TParam>(IDbQueryParameter<TParam> parameter);
+
         public TParam GetParameter<TParam>(string name) where TParam : IConvertible;
 
         public T Result();

@@ -83,9 +83,12 @@ namespace Elegance.Core.Data
 
         public IDbQuery<T> SetParameter<TParam>(string name, TParam value, IDbQueryParameterOptions options) where TParam : IConvertible
         {
-            UpdateCommandParameters(new DbQueryParameter<TParam>(name, value, options));
+            return SetParameter(new DbQueryParameter<TParam>(name, value, options));
+        }
 
-            return this;
+        public IDbQuery<T> SetParameter<TParam>(IDbQueryParameter<TParam> parameter)
+        {
+            return UpdateCommandParameters(parameter);
         }
 
         public TParam GetParameter<TParam>(string name) where TParam : IConvertible
@@ -95,12 +98,21 @@ namespace Elegance.Core.Data
                 : default;
         }
 
-        private void UpdateCommandParameters(IDbQueryParameter dbQueryParameter)
+        private IDbQuery<T> UpdateCommandParameters<TParam>(IDbQueryParameter<TParam> dbQueryParameter)
         {
-            var dbDataParameter = dbQueryParameter.AddToCommand(_command);
+            var dbDataParameter = _command.CreateParameter();
             var dbDataParameterName = dbQueryParameter.Name;
 
+            dbDataParameter.ParameterName = dbQueryParameter.Name;
+            dbDataParameter.Value = dbQueryParameter.Value;
+            dbDataParameter.DbType = dbQueryParameter.DbType;
+            dbDataParameter.Direction = dbQueryParameter.Direction;
+            dbDataParameter.Size = dbQueryParameter.Size;
+
+            _command.Parameters.Add(dbDataParameter);
             _parametersLookup.Add(dbDataParameterName, dbDataParameter);
+
+            return this;
         }
 
         protected abstract IList<T> GetResultFromReader(IDataReader reader);

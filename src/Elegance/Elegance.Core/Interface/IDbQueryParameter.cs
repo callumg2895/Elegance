@@ -5,10 +5,12 @@ using System.Text;
 
 namespace Elegance.Core.Interface
 {
-    public interface IDbQueryParameter
+    public interface IDbQueryParameter<T>
     {
         public string Name { get; }
-
-        public IDbDataParameter AddToCommand(IDbCommand command);
+        public T Value { get; }
+        public DbType DbType { get; }
+        public ParameterDirection Direction { get; }
+        public int Size { get; }
     }
 }

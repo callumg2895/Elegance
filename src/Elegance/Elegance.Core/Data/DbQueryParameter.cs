@@ -6,7 +6,7 @@ using Elegance.Core.Interface;
 
 namespace Elegance.Core.Data
 {
-    internal class DbQueryParameter<T> : IDbQueryParameter
+    internal class DbQueryParameter<T> : IDbQueryParameter<T>
         where T : IConvertible
     {
         private readonly static Dictionary<Type, DbType> _dbTypeMappings;
@@ -35,33 +35,33 @@ namespace Elegance.Core.Data
         }
 
         public string Name { get; private set; }
+        public T Value { get; private set; }
+        public DbType DbType { get; private set; }
+        public ParameterDirection Direction { get; private set; }
+        public int Size { get; private set; }
 
         private readonly Type _valueType;
-        private readonly T _value;
-        private readonly DbType _dbType;
-        private readonly ParameterDirection? _direction;
-        private readonly int? _size;
 
         internal DbQueryParameter(string name, T value, IDbQueryParameterOptions options)
         {
             var type = typeof(T);
 
             Name = name;
+            Value = value;
+            Direction = options?.DirectionOverride ?? ParameterDirection.Input;
+            Size = options?.SizeOverride ?? InterpretSize();
 
-            _value = value;
             _valueType = type.IsEnum
                 ? type.GetEnumUnderlyingType()
                 : type;
-            _direction = options?.DirectionOverride;
-            _size = options?.SizeOverride ?? InterpretSize();
 
             if (options != null && options.DbTypeOverride.HasValue)
             {
-                _dbType = options.DbTypeOverride.Value;
+                DbType = options.DbTypeOverride.Value;
             }
             else if (_dbTypeMappings.TryGetValue(_valueType, out var dbType))
             {
-                _dbType = dbType;
+                DbType = dbType;
             }
             else
             {
@@ -69,34 +69,11 @@ namespace Elegance.Core.Data
             }
         }
 
-        public IDbDataParameter AddToCommand(IDbCommand command)
-        {
-            var commandParameter = command.CreateParameter();
-
-            commandParameter.ParameterName = Name;
-            commandParameter.Value = _value;
-            commandParameter.DbType = _dbType;
-
-            if (_direction.HasValue)
-            {
-                commandParameter.Direction = _direction.Value;
-            }
-
-            if (_size.HasValue)
-            {
-                commandParameter.Size = _size.Value;
-            }
-
-            command.Parameters.Add(commandParameter);
-
-            return commandParameter;
-        }
-
-        private int? InterpretSize()
+        private int InterpretSize()
         {
             if (_valueType == typeof(string))
             {
-                var valueString = (_value as string);
+                var valueString = (Value as string);
                 var valueSize = string.IsNullOrEmpty(valueString)
                     ? -1
                     : valueString.ToCharArray().Length;
@@ -104,7 +81,7 @@ namespace Elegance.Core.Data
                 return valueSize;
             }
 
-            return null;
+            return -1;
         }
     }
 }
