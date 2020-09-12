@@ -18,10 +18,10 @@ namespace Elegance.Core.Tests.Data.TestRepository
             _resourcesDirectory = new DirectoryInfo(Path.Combine(_projectDirectory.FullName, "Resources"));
         }
 
-        public void LoadStoredProcedure(string name)
+        public void LoadStaticData(string name)
         {
-            var resourcesPath = Path.Combine(_resourcesDirectory.FullName);
-            var filePath = Path.Combine(resourcesPath, $"{name}.sql");
+            var staticDataPath = Path.Combine(_resourcesDirectory.FullName, "StaticData");
+            var filePath = Path.Combine(staticDataPath, $"{name}.sql");
             var sql = File.ReadAllText(filePath);
             var statements = sql.Split("GO");
 
@@ -33,7 +33,23 @@ namespace Elegance.Core.Tests.Data.TestRepository
                     .CreateCommand(statement)
                     .ExecuteNonQuery();
             }
+        }
 
+        public void LoadStoredProcedure(string name)
+        {
+            var storedProceduresPath = Path.Combine(_resourcesDirectory.FullName, "StoredProcedures");
+            var filePath = Path.Combine(storedProceduresPath, $"{name}.sql");
+            var sql = File.ReadAllText(filePath);
+            var statements = sql.Split("GO");
+
+            using var session = CreateSession();
+
+            foreach (var statement in statements)
+            {
+                session
+                    .CreateCommand(statement)
+                    .ExecuteNonQuery();
+            }
         }
 
         public void UnloadStoredProcedures(string name)

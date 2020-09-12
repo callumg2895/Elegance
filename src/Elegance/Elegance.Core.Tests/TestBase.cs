@@ -35,7 +35,7 @@ namespace Elegance.Core.Tests
         [AssemblyInitialize]
         public static void AssemblyInitialize(TestContext context)
         {
-            _testEntityARepository.CreateTable();
+            _resourceRepository.LoadStaticData("CreateTestEntityATable");
             _resourceRepository.LoadStoredProcedure("GetTestEntityAItems");
         }
 
@@ -43,7 +43,6 @@ namespace Elegance.Core.Tests
         public static void AssemblyCleanup()
         {
             _resourceRepository.UnloadStoredProcedures("GetTestEntityAItems");
-            _testEntityARepository.DropTable();
         }
 
         [TestInitialize]

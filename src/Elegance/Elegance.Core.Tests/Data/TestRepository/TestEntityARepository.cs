@@ -34,42 +34,6 @@ namespace Elegance.Core.Tests.Data.TestRepository
 
         }
 
-        public void CreateTable()
-        {
-            using var session = CreateSession();
-
-            session.OpenTransaction();
-
-            session
-                .CreateCommand(@"
-                    create table test_entity_a 
-                    (
-                        property_bigint     bigint,
-                        property_int        int,
-                        property_smallint   smallint,
-                        property_tinyint    tinyint,
-                        property_real       real,
-                        property_float      float,
-                        property_decimal    decimal,
-                        property_varchar    varchar(255),
-                        property_datetime   datetime2,
-                        property_enum       int
-                    )")
-                .ExecuteNonQuery();
-
-            session.CommitTransaction();
-        }
-
-        public void DropTable()
-        {
-            using var session = CreateSession();
-
-            session
-                .CreateCommand("drop table test_entity_a")
-                .ExecuteNonQuery();
-        }
-
-
         #region GetAll
 
         public IList<TestEntityA> GetAll_Query()
