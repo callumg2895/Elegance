@@ -10,13 +10,6 @@ namespace Elegance.Core.Data
 {
     internal abstract class DbQuery<T> : IDbQuery<T>, IDisposable
     {
-        private class DbQueryParameterOptions : IDbQueryParameterOptions
-        {
-            public DbType? DbTypeOverride { get; set; }
-            public ParameterDirection? DirectionOverride { get; set; }
-            public int? SizeOverride { get; set; }
-        }
-
         private readonly IDictionary<string, IDbDataParameter> _parametersLookup;
 
         private readonly IDbConnection _connection;
