@@ -5,6 +5,9 @@
 
 trigger:
 - master
+- trunk
+- 0.1.x-staging
+- 0.1.x-production
 
 pool:
   vmImage: 'windows-latest'
