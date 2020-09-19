@@ -68,6 +68,15 @@ namespace Elegance.Core.Data
             return query;
         }
 
+        public IDbNonQuery CreateNonQuery(string commandText, CommandType commandType)
+        {
+            var nonQuery = new DbNonQuery(_dbConnection, _dbTransaction, commandText, commandType);
+
+            _disposables.Add(nonQuery);
+
+            return nonQuery;
+        }
+
         public void Dispose()
         {
             foreach (var disposable in _disposables)
