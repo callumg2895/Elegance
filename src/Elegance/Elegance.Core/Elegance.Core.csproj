@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
 	<LangVersion>latest</LangVersion>
-    <Version>0.1.*</Version>
+    <Version>0.1.0</Version>
     <AssemblyVersion>0.1.0.*</AssemblyVersion>
 	<Deterministic>false</Deterministic>
   </PropertyGroup>
