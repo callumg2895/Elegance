@@ -37,12 +37,14 @@ namespace Elegance.Core.Tests
         {
             _resourceRepository.LoadStaticData("CreateTestEntityATable");
             _resourceRepository.LoadStoredProcedure("GetTestEntityAItems");
+            _resourceRepository.LoadStoredProcedure("CreateTestEntityAItem");
         }
 
         [AssemblyCleanup]
         public static void AssemblyCleanup()
         {
             _resourceRepository.UnloadStoredProcedures("GetTestEntityAItems");
+            _resourceRepository.UnloadStoredProcedures("CreateTestEntityAItem");
         }
 
         [TestInitialize]

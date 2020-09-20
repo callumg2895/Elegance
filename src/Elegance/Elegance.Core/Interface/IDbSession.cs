@@ -51,5 +51,13 @@ namespace Elegance.Core.Interface
         /// <param name="commandType">The command type</param>
         /// <returns>The 'IDbQuery' instance created.</returns>
         public IDbQuery<T> CreateScalarQuery<T>(string commandText, CommandType commandType) where T : IConvertible;
+
+        /// <summary>
+        /// Creates an 'IDbNonQuery' instance.
+        /// </summary>
+        /// <param name="commandText">The command text</param>
+        /// <param name="commandType">The command type</param>
+        /// <returns>The 'IDbNonQuery' instance created.</returns>
+        public IDbNonQuery CreateNonQuery(string commandText, CommandType commandType);
     }
 }
