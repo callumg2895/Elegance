@@ -200,7 +200,7 @@ namespace Elegance.Core.Tests.Data.TestRepository
 
         #region Insert
 
-        public void InsertTestEntity(TestEntityA testEntity)
+        public void InsertTestEntity_Standard(TestEntityA testEntity)
         {
             var sql = @"
                 
@@ -246,6 +246,31 @@ namespace Elegance.Core.Tests.Data.TestRepository
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_enum", Value = (int)testEntity.PropertyEnum, DbType = DbType.Int32 });
 
             command.ExecuteNonQuery();
+        }
+
+        public void InsertTestEntity_NonQuery_StoredProcedure(TestEntityA testEntity, out int resultStatus, out string resultMessage)
+        {
+            using var session = CreateSession();
+
+            var nonQuery = session
+                .CreateNonQuery("CreateTestEntityAItem", CommandType.StoredProcedure)
+                .SetParameter("@result_status", 1, ParameterDirection.Output)
+                .SetParameter<String>("@result_message", null, ParameterDirection.Output)
+                .SetParameter("@property_bigint", testEntity.PropertyBigInt)
+                .SetParameter("@property_int", testEntity.PropertyInt)
+                .SetParameter("@property_smallint", testEntity.PropertySmallInt)
+                .SetParameter("@property_tinyint", testEntity.PropertyTinyInt)
+                .SetParameter("@property_real", testEntity.PropertyReal)
+                .SetParameter("@property_float", testEntity.PropertyFloat)
+                .SetParameter("@property_decimal", testEntity.PropertyDecimal)
+                .SetParameter("@property_varchar", testEntity.PropertyVarChar)
+                .SetParameter("@property_datetime", testEntity.PropertyDateTime)
+                .SetParameter("@property_enum", testEntity.PropertyEnum);
+                
+            nonQuery.Execute();
+
+            resultStatus = nonQuery.GetParameter<int>("@result_status");
+            resultMessage = nonQuery.GetParameter<String>("@result_message");
         }
 
         #endregion

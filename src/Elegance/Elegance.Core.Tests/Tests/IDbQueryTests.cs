@@ -153,7 +153,7 @@ namespace Elegance.Core.Tests.Tests
         {
             // Arrange
             var testEntity = GenerateTestEntity();
-            _testEntityARepository.InsertTestEntity(testEntity);
+            _testEntityARepository.InsertTestEntity_Standard(testEntity);
 
             AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
 
@@ -185,7 +185,7 @@ namespace Elegance.Core.Tests.Tests
 
             if (insert)
             {
-                _testEntityARepository.InsertTestEntity(testEntity);
+                _testEntityARepository.InsertTestEntity_Standard(testEntity);
             }
 
             return testEntity;

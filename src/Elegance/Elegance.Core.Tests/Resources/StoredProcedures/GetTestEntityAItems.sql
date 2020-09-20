@@ -21,8 +21,8 @@ CREATE PROCEDURE [dbo].GetTestEntityAItems  @result_status	int				= null out,
                                             @property_enum int              = null
 AS
 BEGIN
-    set @result_status = 0;
-    set @result_message = 'success';
+    SET @result_status = 0;
+    SET @result_message = 'success';
 
     SELECT  tea.property_bigint         AS PropertyBigInt,
             tea.property_int            AS PropertyInt,
