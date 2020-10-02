@@ -62,6 +62,16 @@ namespace Elegance.Core.Tests.Data.TestRepository
             return results;
         }
 
+        public IList<TestEntityA> GetAll_Query_Reader()
+        {
+            using var session = CreateSession();
+
+            var query = session.CreateObjectQuery<TestEntityA>(_testEntitySelectText, CommandType.Text);
+            var reader = query.Reader();
+
+            return ReadTestEntities(reader);
+        }
+
         public IList<TestEntityA> GetAll_Standard()
         {
             using var session = CreateSession();

@@ -41,10 +41,14 @@ namespace Elegance.Core.Data
 
         public virtual IList<T> Results()
         {
-            using var command = _command;
-            using var reader = command.ExecuteReader();
+            using var reader = Reader();
 
             return GetResultFromReader(reader);
+        }
+
+        public virtual IDataReader Reader()
+        {
+            return _command.ExecuteReader();
         }
 
         public IDbQuery<T> SetParameter<TParam>(string name, TParam value) where TParam : IConvertible
