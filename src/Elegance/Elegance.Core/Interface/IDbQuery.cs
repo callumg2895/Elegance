@@ -102,5 +102,11 @@ namespace Elegance.Core.Interface
         /// </summary>
         /// <returns>The list of result values (if any).</returns>
         public IList<T> Results();
+
+        /// <summary>
+        /// Retrieves the internal data reader used for the query.
+        /// </summary>
+        /// <returns>The internal IDataReader instance.</returns>
+        public IDataReader Reader();
     }
 }

@@ -166,6 +166,37 @@ namespace Elegance.Core.Tests.Tests
             AssertAreEqual(testEntity, result);
         }
 
+        /// <summary>
+        /// Test Method: Test007_WhenReadingReferenceTypeResultFromRawSQLWithReader_ResultShouldMatchStandardReaderResult:
+        /// 
+        /// When a raw SQL select statement is passed to the CreateQuery method, the reader should match
+        /// the reader produced by the manually written command code.
+        /// </summary>
+        [TestMethod]
+        public void Test007_WhenReadingReferenceTypeResultFromRawSQLWithReader_ResultShouldMatchStandardReaderResult()
+        {
+            // Arrange
+            for (int i = 0; i < 10; i++)
+            {
+                GenerateTestEntity();
+            }
+
+            AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
+
+            // Act
+            var expectedResults = _testEntityARepository.GetAll_Standard();
+            var actualResults = _testEntityARepository.GetAll_Query_Reader();
+
+            // Assert
+            Assert.AreEqual(expectedResults.GetType(), actualResults.GetType(), $"Expected type '{expectedResults.GetType().Name}', but got type '{actualResults.GetType().Name}'");
+            Assert.AreEqual(expectedResults.Count, actualResults.Count, $"Expected {expectedResults.Count} results, but got {actualResults.Count}");
+
+            for (int i = 0; i < expectedResults.Count; i++)
+            {
+                AssertAreEqual(expectedResults[i], actualResults[i]);
+            }
+        }
+
         private TestEntityA GenerateTestEntity(bool insert = true)
         {
             seed++;
