@@ -211,8 +211,40 @@ namespace Elegance.Core.Tests.Tests
                 PropertyFloat = seed/double.MaxValue,
                 PropertyDecimal = seed/decimal.MaxValue,
                 PropertyVarChar = $"{seed}",
-                PropertyDateTime = DateTime.Now.AddDays(seed)
+                PropertyDateTime = DateTime.Now.AddDays(seed),
+
+                PropertyNullableBigInt = seed,
+                PropertyNullableInt = seed,
+                PropertyNullableSmallInt = (short)(seed % short.MaxValue),
+                PropertyNullableTinyInt = (byte)(seed % byte.MaxValue),
+                PropertyNullableReal = seed / float.MaxValue,
+                PropertyNullableFloat = seed / double.MaxValue,
+                PropertyNullableDecimal = seed / decimal.MaxValue,
+                PropertyNullableDateTime = DateTime.Now.AddDays(seed)
             };
+
+            if (seed % 2 == 0)
+            {
+                testEntity.PropertyNullableBigInt = null;
+                testEntity.PropertyNullableInt = null;
+                testEntity.PropertyNullableSmallInt = null;
+                testEntity.PropertyNullableTinyInt = null;
+                testEntity.PropertyNullableReal = null;
+                testEntity.PropertyNullableFloat = null;
+                testEntity.PropertyNullableDecimal = null;
+                testEntity.PropertyNullableDateTime = null;
+            }
+            else
+            {
+                testEntity.PropertyNullableBigInt = seed;
+                testEntity.PropertyNullableInt = seed;
+                testEntity.PropertyNullableSmallInt = (short)(seed % short.MaxValue);
+                testEntity.PropertyNullableTinyInt = (byte)(seed % byte.MaxValue);
+                testEntity.PropertyNullableReal = seed / float.MaxValue;
+                testEntity.PropertyNullableFloat = seed / double.MaxValue;
+                testEntity.PropertyNullableDecimal = seed / decimal.MaxValue;
+                testEntity.PropertyNullableDateTime = DateTime.Now.AddDays(seed);
+            }
 
             if (insert)
             {
@@ -234,6 +266,16 @@ namespace Elegance.Core.Tests.Tests
             Assert.AreEqual(expected.PropertyVarChar, actual.PropertyVarChar, $"Expected {expected.PropertyVarChar}, but got {actual.PropertyVarChar} for {nameof(TestEntityA.PropertyVarChar)}");
             Assert.AreEqual(expected.PropertyDateTime, actual.PropertyDateTime, $"Expected {expected.PropertyDateTime}, but got {actual.PropertyDateTime} for {nameof(TestEntityA.PropertyDateTime)}");
             Assert.AreEqual(expected.PropertyEnum, actual.PropertyEnum, $"Expected {expected.PropertyEnum}, but got {actual.PropertyEnum} for {nameof(TestEntityA.PropertyEnum)}");
+
+            Assert.AreEqual(expected.PropertyNullableBigInt, actual.PropertyNullableBigInt, $"Expected {expected.PropertyNullableBigInt}, but got {actual.PropertyNullableBigInt} for {nameof(TestEntityA.PropertyNullableBigInt)}");
+            Assert.AreEqual(expected.PropertyNullableInt, actual.PropertyNullableInt, $"Expected {expected.PropertyNullableInt}, but got {actual.PropertyNullableInt} for {nameof(TestEntityA.PropertyNullableInt)}");
+            Assert.AreEqual(expected.PropertyNullableSmallInt, actual.PropertyNullableSmallInt, $"Expected {expected.PropertyNullableSmallInt}, but got {actual.PropertyNullableSmallInt} for {nameof(TestEntityA.PropertyNullableSmallInt)}");
+            Assert.AreEqual(expected.PropertyNullableTinyInt, actual.PropertyNullableTinyInt, $"Expected {expected.PropertyNullableTinyInt}, but got {actual.PropertyNullableTinyInt} for {nameof(TestEntityA.PropertyNullableTinyInt)}");
+            Assert.AreEqual(expected.PropertyNullableReal, actual.PropertyNullableReal, $"Expected {expected.PropertyNullableReal}, but got {actual.PropertyNullableReal} for {nameof(TestEntityA.PropertyNullableReal)}");
+            Assert.AreEqual(expected.PropertyNullableFloat, actual.PropertyNullableFloat, $"Expected {expected.PropertyNullableFloat}, but got {actual.PropertyNullableFloat} for {nameof(TestEntityA.PropertyNullableFloat)}");
+            Assert.AreEqual(expected.PropertyNullableDecimal, actual.PropertyNullableDecimal, $"Expected {expected.PropertyNullableDecimal}, but got {actual.PropertyNullableDecimal} for {nameof(TestEntityA.PropertyNullableDecimal)}");
+            Assert.AreEqual(expected.PropertyNullableDateTime, actual.PropertyNullableDateTime, $"Expected {expected.PropertyNullableDateTime}, but got {actual.PropertyNullableDateTime} for {nameof(TestEntityA.PropertyNullableDateTime)}");
+            Assert.AreEqual(expected.PropertyNullableEnum, actual.PropertyNullableEnum, $"Expected {expected.PropertyNullableEnum}, but got {actual.PropertyNullableEnum} for {nameof(TestEntityA.PropertyNullableEnum)}");
         }
     }
 }

@@ -11,16 +11,25 @@ namespace Elegance.Core.Tests.Data.TestRepository
     public class TestEntityARepository : BaseRepository
     {
         private const string _testEntitySelectText = @"
-                select  tea.property_bigint         as PropertyBigInt,
-                        tea.property_int            as PropertyInt,
-                        tea.property_smallint       as PropertySmallInt,
-                        tea.property_tinyint        as PropertyTinyInt,
-                        tea.property_real           as PropertyReal,
-                        tea.property_float          as PropertyFloat,
-                        tea.property_decimal        as PropertyDecimal,
-                        tea.property_varchar        as PropertyVarChar,
-                        tea.property_datetime       as PropertyDateTime,
-                        tea.property_enum           as PropertyEnum
+                select  tea.property_bigint                     AS PropertyBigInt,
+                        tea.property_int                        AS PropertyInt,
+                        tea.property_smallint                   AS PropertySmallInt,
+                        tea.property_tinyint                    AS PropertyTinyInt,
+                        tea.property_real                       AS PropertyReal,
+                        tea.property_float                      AS PropertyFloat,
+                        tea.property_decimal                    AS PropertyDecimal,
+                        tea.property_varchar                    AS PropertyVarChar,
+                        tea.property_datetime                   AS PropertyDateTime,
+                        tea.property_enum                       AS PropertyEnum,
+                        tea.property_nullable_bigint            AS PropertyNullableBigInt,
+                        tea.property_nullable_int               AS PropertyNullableInt,
+                        tea.property_nullable_smallint          AS PropertyNullableSmallInt,
+                        tea.property_nullable_tinyint           AS PropertyNullableTinyInt,
+                        tea.property_nullable_real              AS PropertyNullableReal,
+                        tea.property_nullable_float             AS PropertyNullableFloat,
+                        tea.property_nullable_decimal           AS PropertyNullableDecimal,
+                        tea.property_nullable_datetime          AS PropertyNullableDateTime,
+                        tea.property_nullable_enum              AS PropertyNullableEnum
 
                 from    test_entity_a tea (nolock)";
 
@@ -125,6 +134,42 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 .AppendLine("and tea.property_varchar = @property_varchar")
                 .AppendLine("and tea.property_datetime = @property_datetime")
                 .AppendLine("and tea.property_enum = @property_enum")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_bigint = COALESCE(@property_nullable_bigint, tea.property_nullable_bigint)) OR")
+                .AppendLine("        (tea.property_nullable_bigint IS NULL AND @property_nullable_bigint IS NULL)")
+                .AppendLine("    )")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_int = COALESCE(@property_nullable_int, tea.property_nullable_int)) OR")
+                .AppendLine("        (tea.property_nullable_int IS NULL AND @property_nullable_int IS NULL)")
+                .AppendLine("    )")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_smallint = COALESCE(@property_nullable_smallint, tea.property_nullable_smallint)) OR")
+                .AppendLine("        (tea.property_nullable_smallint IS NULL AND @property_nullable_smallint IS NULL)")
+                .AppendLine("    )")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_tinyint = COALESCE(@property_nullable_tinyint, tea.property_nullable_tinyint)) OR")
+                .AppendLine("        (tea.property_nullable_tinyint IS NULL AND @property_nullable_tinyint IS NULL)")
+                .AppendLine("    )")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_real = COALESCE(@property_nullable_real, tea.property_nullable_real)) OR")
+                .AppendLine("        (tea.property_nullable_real IS NULL AND @property_nullable_real IS NULL)")
+                .AppendLine("    )")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_float = COALESCE(@property_nullable_float, tea.property_nullable_float)) OR")
+                .AppendLine("        (tea.property_nullable_float IS NULL AND @property_nullable_float IS NULL)")
+                .AppendLine("    )")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_decimal = COALESCE(@property_nullable_decimal, tea.property_nullable_decimal)) OR")
+                .AppendLine("        (tea.property_nullable_decimal IS NULL AND @property_nullable_decimal IS NULL)")
+                .AppendLine("    )")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_datetime = COALESCE(@property_nullable_datetime, tea.property_nullable_datetime)) OR")
+                .AppendLine("        (tea.property_nullable_datetime IS NULL AND @property_nullable_datetime IS NULL)")
+                .AppendLine("    )")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_enum = COALESCE(@property_nullable_enum, tea.property_nullable_enum)) OR")
+                .AppendLine("        (tea.property_nullable_enum IS NULL AND @property_nullable_enum IS NULL)")
+                .AppendLine("     )")
                 .ToString();
 
             using var session = CreateSession();
@@ -141,6 +186,15 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 .SetParameter("@property_varchar", testEntity.PropertyVarChar)
                 .SetParameter("@property_datetime", testEntity.PropertyDateTime)
                 .SetParameter("@property_enum", testEntity.PropertyEnum)
+                .SetParameter("@property_nullable_bigint", testEntity.PropertyNullableBigInt)
+                .SetParameter("@property_nullable_int", testEntity.PropertyNullableInt)
+                .SetParameter("@property_nullable_smallint", testEntity.PropertyNullableSmallInt)
+                .SetParameter("@property_nullable_tinyint", testEntity.PropertyNullableTinyInt)
+                .SetParameter("@property_nullable_real", testEntity.PropertyNullableReal)
+                .SetParameter("@property_nullable_float", testEntity.PropertyNullableFloat)
+                .SetParameter("@property_nullable_decimal", testEntity.PropertyNullableDecimal)
+                .SetParameter("@property_nullable_datetime", testEntity.PropertyNullableDateTime)
+                .SetParameter("@property_nullable_enum", testEntity.PropertyNullableEnum)
                 .Result();
         }
 
@@ -161,7 +215,16 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 .SetParameter("@property_decimal", testEntity.PropertyDecimal)
                 .SetParameter("@property_varchar", testEntity.PropertyVarChar)
                 .SetParameter("@property_datetime", testEntity.PropertyDateTime)
-                .SetParameter("@property_enum", testEntity.PropertyEnum);
+                .SetParameter("@property_enum", testEntity.PropertyEnum)
+                .SetParameter("@property_nullable_bigint", testEntity.PropertyNullableBigInt)
+                .SetParameter("@property_nullable_int", testEntity.PropertyNullableInt)
+                .SetParameter("@property_nullable_smallint", testEntity.PropertyNullableSmallInt)
+                .SetParameter("@property_nullable_tinyint", testEntity.PropertyNullableTinyInt)
+                .SetParameter("@property_nullable_real", testEntity.PropertyNullableReal)
+                .SetParameter("@property_nullable_float", testEntity.PropertyNullableFloat)
+                .SetParameter("@property_nullable_decimal", testEntity.PropertyNullableDecimal)
+                .SetParameter("@property_nullable_datetime", testEntity.PropertyNullableDateTime)
+                .SetParameter("@property_nullable_enum", testEntity.PropertyNullableEnum);
 
             var result = query.Result();
 
@@ -185,6 +248,42 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 .AppendLine("and tea.property_varchar = @property_varchar")
                 .AppendLine("and tea.property_datetime = @property_datetime")
                 .AppendLine("and tea.property_enum = @property_enum")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_bigint = COALESCE(@property_nullable_bigint, tea.property_nullable_bigint)) OR")
+                .AppendLine("        (tea.property_nullable_bigint IS NULL AND @property_nullable_bigint IS NULL)")
+                .AppendLine("    )")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_int = COALESCE(@property_nullable_int, tea.property_nullable_int)) OR")
+                .AppendLine("        (tea.property_nullable_int IS NULL AND @property_nullable_int IS NULL)")
+                .AppendLine("    )")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_smallint = COALESCE(@property_nullable_smallint, tea.property_nullable_smallint)) OR")
+                .AppendLine("        (tea.property_nullable_smallint IS NULL AND @property_nullable_smallint IS NULL)")
+                .AppendLine("    )")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_tinyint = COALESCE(@property_nullable_tinyint, tea.property_nullable_tinyint)) OR")
+                .AppendLine("        (tea.property_nullable_tinyint IS NULL AND @property_nullable_tinyint IS NULL)")
+                .AppendLine("    )")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_real = COALESCE(@property_nullable_real, tea.property_nullable_real)) OR")
+                .AppendLine("        (tea.property_nullable_real IS NULL AND @property_nullable_real IS NULL)")
+                .AppendLine("    )")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_float = COALESCE(@property_nullable_float, tea.property_nullable_float)) OR")
+                .AppendLine("        (tea.property_nullable_float IS NULL AND @property_nullable_float IS NULL)")
+                .AppendLine("    )")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_decimal = COALESCE(@property_nullable_decimal, tea.property_nullable_decimal)) OR")
+                .AppendLine("        (tea.property_nullable_decimal IS NULL AND @property_nullable_decimal IS NULL)")
+                .AppendLine("    )")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_datetime = COALESCE(@property_nullable_datetime, tea.property_nullable_datetime)) OR")
+                .AppendLine("        (tea.property_nullable_datetime IS NULL AND @property_nullable_datetime IS NULL)")
+                .AppendLine("    )")
+                .AppendLine("AND (")
+                .AppendLine("        (tea.property_nullable_enum = COALESCE(@property_nullable_enum, tea.property_nullable_enum)) OR")
+                .AppendLine("        (tea.property_nullable_enum IS NULL AND @property_nullable_enum IS NULL)")
+                .AppendLine("     )")
                 .ToString();
 
             using var session = CreateSession();
@@ -200,6 +299,15 @@ namespace Elegance.Core.Tests.Data.TestRepository
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_varchar", Value = testEntity.PropertyVarChar, DbType = DbType.AnsiString });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_datetime", Value = testEntity.PropertyDateTime, DbType = DbType.DateTime2 });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_enum", Value = (int)testEntity.PropertyEnum, DbType = DbType.Int32 });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_bigint", Value = testEntity.PropertyNullableBigInt.HasValue ? testEntity.PropertyNullableBigInt.Value : (object)DBNull.Value, DbType = DbType.Int64 });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_int", Value = testEntity.PropertyNullableInt.HasValue ? testEntity.PropertyNullableInt.Value : (object)DBNull.Value, DbType = DbType.Int32 });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_smallint", Value = testEntity.PropertyNullableSmallInt.HasValue ? testEntity.PropertyNullableSmallInt.Value : (object)DBNull.Value, DbType = DbType.Int16 });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_tinyint", Value = testEntity.PropertyNullableTinyInt.HasValue ? testEntity.PropertyNullableTinyInt.Value : (object)DBNull.Value, DbType = DbType.Byte });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_real", Value = testEntity.PropertyNullableReal.HasValue ? testEntity.PropertyNullableReal.Value : (object)DBNull.Value, DbType = DbType.Single });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_float", Value = testEntity.PropertyNullableFloat.HasValue ? testEntity.PropertyNullableFloat.Value : (object)DBNull.Value, DbType = DbType.Double });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_decimal", Value = testEntity.PropertyNullableDecimal.HasValue ? testEntity.PropertyNullableDecimal.Value : (object)DBNull.Value, DbType = DbType.Decimal });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_datetime", Value = testEntity.PropertyNullableDateTime.HasValue ? testEntity.PropertyNullableDateTime.Value : (object)DBNull.Value, DbType = DbType.DateTime2 });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_enum", Value = testEntity.PropertyNullableEnum.HasValue ? (int?)testEntity.PropertyNullableEnum.Value : (object)DBNull.Value, DbType = DbType.Int32 });
 
             using var reader = command.ExecuteReader();
 
@@ -225,7 +333,16 @@ namespace Elegance.Core.Tests.Data.TestRepository
                         property_decimal    ,
                         property_varchar    ,
                         property_datetime   ,
-                        property_enum
+                        property_enum,
+                        property_nullable_bigint,
+                        property_nullable_int,
+                        property_nullable_smallint,
+                        property_nullable_tinyint,
+                        property_nullable_real,
+                        property_nullable_float,
+                        property_nullable_decimal,
+                        property_nullable_datetime,
+                        property_nullable_enum
                 )
                 values
                 (
@@ -238,7 +355,16 @@ namespace Elegance.Core.Tests.Data.TestRepository
                     @property_decimal,
                     @property_varchar,
                     @property_datetime,
-                    @property_enum
+                    @property_enum,
+                    @property_nullable_bigint,
+                    @property_nullable_int,
+                    @property_nullable_smallint,
+                    @property_nullable_tinyint,
+                    @property_nullable_real,
+                    @property_nullable_float,
+                    @property_nullable_decimal,
+                    @property_nullable_datetime,
+                    @property_nullable_enum
                 )";
 
             using var session = CreateSession();
@@ -248,12 +374,21 @@ namespace Elegance.Core.Tests.Data.TestRepository
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_int", Value = testEntity.PropertyInt, DbType = DbType.Int32 });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_smallint", Value = testEntity.PropertySmallInt, DbType = DbType.Int16 });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_tinyint", Value = testEntity.PropertyTinyInt, DbType = DbType.Byte });
-            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_varchar", Value = testEntity.PropertyVarChar, DbType = DbType.AnsiString });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_real", Value = testEntity.PropertyReal, DbType = DbType.Single });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_float", Value = testEntity.PropertyFloat, DbType = DbType.Double });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_decimal", Value = testEntity.PropertyDecimal, DbType = DbType.Decimal });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_varchar", Value = testEntity.PropertyVarChar, DbType = DbType.AnsiString });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_datetime", Value = testEntity.PropertyDateTime, DbType = DbType.DateTime2 });
             command.Parameters.Add(new SqlParameter() { ParameterName = "@property_enum", Value = (int)testEntity.PropertyEnum, DbType = DbType.Int32 });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_bigint", Value = testEntity.PropertyNullableBigInt.HasValue ? testEntity.PropertyNullableBigInt.Value : (object)DBNull.Value , DbType = DbType.Int64 });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_int", Value = testEntity.PropertyNullableInt.HasValue ? testEntity.PropertyNullableInt.Value : (object)DBNull.Value, DbType = DbType.Int32 });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_smallint", Value = testEntity.PropertyNullableSmallInt.HasValue ? testEntity.PropertyNullableSmallInt.Value : (object)DBNull.Value , DbType = DbType.Int16 });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_tinyint", Value = testEntity.PropertyNullableTinyInt.HasValue ? testEntity.PropertyNullableTinyInt.Value : (object)DBNull.Value, DbType = DbType.Byte });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_real", Value = testEntity.PropertyNullableReal.HasValue ? testEntity.PropertyNullableReal.Value : (object)DBNull.Value, DbType = DbType.Single });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_float", Value = testEntity.PropertyNullableFloat.HasValue ? testEntity.PropertyNullableFloat.Value : (object)DBNull.Value, DbType = DbType.Double });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_decimal", Value = testEntity.PropertyNullableDecimal.HasValue ? testEntity.PropertyNullableDecimal.Value : (object)DBNull.Value, DbType = DbType.Decimal });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_datetime", Value = testEntity.PropertyNullableDateTime.HasValue ? testEntity.PropertyNullableDateTime.Value : (object)DBNull.Value, DbType = DbType.DateTime2 });
+            command.Parameters.Add(new SqlParameter() { ParameterName = "@property_nullable_enum", Value = testEntity.PropertyNullableEnum.HasValue ? (int?)testEntity.PropertyNullableEnum.Value : (object)DBNull.Value, DbType = DbType.Int32 });
 
             command.ExecuteNonQuery();
         }
@@ -275,8 +410,17 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 .SetParameter("@property_decimal", testEntity.PropertyDecimal)
                 .SetParameter("@property_varchar", testEntity.PropertyVarChar)
                 .SetParameter("@property_datetime", testEntity.PropertyDateTime)
-                .SetParameter("@property_enum", testEntity.PropertyEnum);
-                
+                .SetParameter("@property_enum", testEntity.PropertyEnum)
+                .SetParameter("@property_nullable_bigint", testEntity.PropertyNullableBigInt)
+                .SetParameter("@property_nullable_int", testEntity.PropertyNullableInt)
+                .SetParameter("@property_nullable_smallint", testEntity.PropertyNullableSmallInt)
+                .SetParameter("@property_nullable_tinyint", testEntity.PropertyNullableTinyInt)
+                .SetParameter("@property_nullable_real", testEntity.PropertyNullableReal)
+                .SetParameter("@property_nullable_float", testEntity.PropertyNullableFloat)
+                .SetParameter("@property_nullable_decimal", testEntity.PropertyNullableDecimal)
+                .SetParameter("@property_nullable_datetime", testEntity.PropertyNullableDateTime)
+                .SetParameter("@property_nullable_enum", testEntity.PropertyNullableEnum);
+
             nonQuery.Execute();
 
             resultStatus = nonQuery.GetParameter<int>("@result_status");
@@ -320,6 +464,34 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 entity.PropertyVarChar = (string)reader[nameof(entity.PropertyVarChar)];
                 entity.PropertyDateTime = (DateTime)reader[nameof(entity.PropertyDateTime)];
                 entity.PropertyEnum = (TestEnumA)(int)reader[nameof(entity.PropertyEnum)];
+
+                entity.PropertyNullableBigInt = reader[nameof(entity.PropertyNullableBigInt)] == DBNull.Value 
+                    ? null
+                    : (long?)reader[nameof(entity.PropertyBigInt)];
+                entity.PropertyNullableInt = reader[nameof(entity.PropertyNullableInt)] == DBNull.Value
+                    ? null
+                    : (int?)reader[nameof(entity.PropertyNullableInt)];
+                entity.PropertyNullableSmallInt = reader[nameof(entity.PropertyNullableSmallInt)] == DBNull.Value
+                    ? null
+                    : (short?)reader[nameof(entity.PropertyNullableSmallInt)];
+                entity.PropertyNullableTinyInt = reader[nameof(entity.PropertyNullableTinyInt)] == DBNull.Value
+                    ? null
+                    : (byte?)reader[nameof(entity.PropertyNullableTinyInt)];
+                entity.PropertyNullableReal = reader[nameof(entity.PropertyNullableReal)] == DBNull.Value
+                    ? null
+                    : (float?)reader[nameof(entity.PropertyNullableReal)];
+                entity.PropertyNullableFloat = reader[nameof(entity.PropertyNullableFloat)] == DBNull.Value
+                    ? null
+                    : (double?)reader[nameof(entity.PropertyNullableFloat)];
+                entity.PropertyNullableDecimal = reader[nameof(entity.PropertyNullableDecimal)] == DBNull.Value
+                    ? null
+                    : (decimal?)reader[nameof(entity.PropertyNullableDecimal)];
+                entity.PropertyNullableDateTime = reader[nameof(entity.PropertyNullableDateTime)] == DBNull.Value
+                    ? null
+                    : (DateTime?)reader[nameof(entity.PropertyNullableDateTime)];
+                entity.PropertyNullableEnum = reader[nameof(entity.PropertyNullableEnum)] == DBNull.Value
+                    ? null
+                    : (TestEnumA?)reader[nameof(entity.PropertyNullableEnum)];
 
                 entities.Add(entity);
             }

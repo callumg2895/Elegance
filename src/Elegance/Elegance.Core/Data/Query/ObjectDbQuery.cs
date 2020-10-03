@@ -28,18 +28,24 @@ namespace Elegance.Core.Data.Query
                 {
                     var value = reader[property.Name];
                     var type = property.PropertyType;
+                    var nullUnderlyingType = Nullable.GetUnderlyingType(type);
 
-                    if (type.IsEnum)
+
+                    if (value == DBNull.Value)
                     {
-                        var underlyingType = type.GetEnumUnderlyingType();
-                        var convertedUnderlyingValue = Convert.ChangeType(value, underlyingType);
+                        property.SetValue(result, null);
+                    }
+                    else if (type.IsEnum)
+                    {
+                        var enumUnderlyingType = (nullUnderlyingType ?? type).GetEnumUnderlyingType();
+                        var convertedUnderlyingValue = Convert.ChangeType(value, enumUnderlyingType);
                         var convertedValue = Enum.Parse(type, convertedUnderlyingValue.ToString());
 
                         property.SetValue(result, convertedValue);
                     }
                     else
                     {
-                        var convertedValue = Convert.ChangeType(value, type);
+                        var convertedValue = Convert.ChangeType(value, nullUnderlyingType ?? type);
 
                         property.SetValue(result, convertedValue);
                     }

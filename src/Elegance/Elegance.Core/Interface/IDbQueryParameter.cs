@@ -36,5 +36,11 @@ namespace Elegance.Core.Interface
         /// The size value to use for the parameter.
         /// </summary>
         public int Size { get; }
+
+        /// <summary>
+        /// Get the value used for the IDbDataParameter used in the IDbCommand.
+        /// </summary>
+        /// <returns>The value used for the IDbDataParameter</returns>
+        public object GetValueForParameter();
     }
 }

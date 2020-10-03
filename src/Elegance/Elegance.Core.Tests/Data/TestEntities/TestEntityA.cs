@@ -24,5 +24,14 @@ namespace Elegance.Core.Tests.Data.TestEntities
         public string PropertyVarChar { get; set; }
         public DateTime PropertyDateTime { get; set; }
         public TestEnumA PropertyEnum { get; set; }
+        public long? PropertyNullableBigInt { get; set; }
+        public int? PropertyNullableInt { get; set; }
+        public short? PropertyNullableSmallInt { get; set; }
+        public byte? PropertyNullableTinyInt { get; set; }
+        public float? PropertyNullableReal { get; set; }
+        public double? PropertyNullableFloat { get; set; }
+        public decimal? PropertyNullableDecimal { get; set; }
+        public DateTime? PropertyNullableDateTime { get; set; }
+        public TestEnumA? PropertyNullableEnum { get; set; }
     }
 }

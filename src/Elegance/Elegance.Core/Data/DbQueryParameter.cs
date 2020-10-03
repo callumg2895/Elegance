@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 using Elegance.Core.Interface;
 
 namespace Elegance.Core.Data
 {
     internal class DbQueryParameter<T> : IDbQueryParameter<T>
-        where T : IConvertible
     {
         private readonly static Dictionary<Type, DbType> _dbTypeMappings;
 
@@ -40,20 +40,34 @@ namespace Elegance.Core.Data
         public ParameterDirection Direction { get; private set; }
         public int Size { get; private set; }
 
+        private readonly bool _isNullable;
         private readonly Type _valueType;
 
         internal DbQueryParameter(string name, T value, IDbQueryParameterOptions options)
         {
             var type = typeof(T);
+            var underlyingType = Nullable.GetUnderlyingType(type);
 
             Name = name;
             Value = value;
             Direction = options?.DirectionOverride ?? ParameterDirection.Input;
             Size = options?.SizeOverride ?? InterpretSize();
 
-            _valueType = type.IsEnum
-                ? type.GetEnumUnderlyingType()
-                : type;
+            _isNullable = underlyingType != null;
+
+            if (_isNullable)
+            {
+                _valueType = underlyingType.IsEnum
+                    ? underlyingType.GetEnumUnderlyingType()
+                    : underlyingType;
+            }
+            else
+            {
+                _valueType = type.IsEnum
+                    ? type.GetEnumUnderlyingType()
+                    : type;
+            }
+
 
             if (options != null && options.DbTypeOverride.HasValue)
             {
@@ -66,6 +80,20 @@ namespace Elegance.Core.Data
             else
             {
                 throw new ArgumentException($"No override was provided for '{nameof(DbType)}', and neither type '{type.Name}' or its related underlying types have a standard conversion to '{nameof(DbType)}' available");
+            }
+        }
+
+        public object GetValueForParameter()
+        {
+            if (_isNullable)
+            {
+                return Value == null 
+                    ? (object)DBNull.Value 
+                    : (object)Value;
+            }
+            else
+            {
+                return (object)Value;
             }
         }
 

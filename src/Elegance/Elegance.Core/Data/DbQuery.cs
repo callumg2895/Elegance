@@ -51,22 +51,22 @@ namespace Elegance.Core.Data
             return _command.ExecuteReader();
         }
 
-        public IDbQuery<T> SetParameter<TParam>(string name, TParam value) where TParam : IConvertible
+        public IDbQuery<T> SetParameter<TParam>(string name, TParam value)
         {
             return SetParameter(name, value, null, null);
         }
 
-        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, DbType? dbTypeOverride) where TParam : IConvertible
+        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, DbType? dbTypeOverride)
         {
             return SetParameter(name, value, dbTypeOverride, null);
         }
 
-        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, ParameterDirection? directionOverride) where TParam : IConvertible
+        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, ParameterDirection? directionOverride)
         {
             return SetParameter(name, value, null, directionOverride);
         }
 
-        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, DbType? dbTypeOverride, ParameterDirection? directionOverride) where TParam : IConvertible
+        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, DbType? dbTypeOverride, ParameterDirection? directionOverride)
         {
             var options = new DbQueryParameterOptions()
             {
@@ -78,7 +78,7 @@ namespace Elegance.Core.Data
             return SetParameter(name, value, options);
         }
 
-        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, IDbQueryParameterOptions options) where TParam : IConvertible
+        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, IDbQueryParameterOptions options)
         {
             return SetParameter(new DbQueryParameter<TParam>(name, value, options));
         }
@@ -88,7 +88,7 @@ namespace Elegance.Core.Data
             return UpdateCommandParameters(parameter);
         }
 
-        public TParam GetParameter<TParam>(string name) where TParam : IConvertible
+        public TParam GetParameter<TParam>(string name)
         {
             return _parametersLookup.TryGetValue(name, out IDbDataParameter dbDataParameter)
                 ? (TParam)dbDataParameter.Value
@@ -101,7 +101,7 @@ namespace Elegance.Core.Data
             var dbDataParameterName = dbQueryParameter.Name;
 
             dbDataParameter.ParameterName = dbQueryParameter.Name;
-            dbDataParameter.Value = dbQueryParameter.Value;
+            dbDataParameter.Value = dbQueryParameter.GetValueForParameter();
             dbDataParameter.DbType = dbQueryParameter.DbType;
             dbDataParameter.Direction = dbQueryParameter.Direction;
             dbDataParameter.Size = dbQueryParameter.Size;
