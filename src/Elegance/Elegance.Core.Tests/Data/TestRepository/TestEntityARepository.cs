@@ -454,44 +454,26 @@ namespace Elegance.Core.Tests.Data.TestRepository
             {
                 var entity = new TestEntityA();
 
-                entity.PropertyBigInt = (long)reader[nameof(entity.PropertyBigInt)];
-                entity.PropertyInt = (int)reader[nameof(entity.PropertyInt)];
-                entity.PropertySmallInt = (short)reader[nameof(entity.PropertySmallInt)];
-                entity.PropertyTinyInt = (byte)reader[nameof(entity.PropertyTinyInt)];
-                entity.PropertyReal = (float)reader[nameof(entity.PropertyReal)];
-                entity.PropertyFloat = (double)reader[nameof(entity.PropertyFloat)];
-                entity.PropertyDecimal = (decimal)reader[nameof(entity.PropertyDecimal)];
-                entity.PropertyVarChar = (string)reader[nameof(entity.PropertyVarChar)];
-                entity.PropertyDateTime = (DateTime)reader[nameof(entity.PropertyDateTime)];
-                entity.PropertyEnum = (TestEnumA)(int)reader[nameof(entity.PropertyEnum)];
+                entity.PropertyBigInt = (long)GetReaderValue(reader, nameof(entity.PropertyBigInt));
+                entity.PropertyInt = (int)GetReaderValue(reader, nameof(entity.PropertyInt));
+                entity.PropertySmallInt = (short)GetReaderValue(reader, nameof(entity.PropertySmallInt));
+                entity.PropertyTinyInt = (byte)GetReaderValue(reader, nameof(entity.PropertyTinyInt));
+                entity.PropertyReal = (float)GetReaderValue(reader, nameof(entity.PropertyReal));
+                entity.PropertyFloat = (double)GetReaderValue(reader, nameof(entity.PropertyFloat));
+                entity.PropertyDecimal = (decimal)GetReaderValue(reader, nameof(entity.PropertyDecimal));
+                entity.PropertyVarChar = (string)GetReaderValue(reader, nameof(entity.PropertyVarChar));
+                entity.PropertyDateTime = (DateTime)GetReaderValue(reader, nameof(entity.PropertyDateTime));
+                entity.PropertyEnum = (TestEnumA)(int)GetReaderValue(reader, nameof(entity.PropertyEnum));
 
-                entity.PropertyNullableBigInt = reader[nameof(entity.PropertyNullableBigInt)] == DBNull.Value 
-                    ? null
-                    : (long?)reader[nameof(entity.PropertyBigInt)];
-                entity.PropertyNullableInt = reader[nameof(entity.PropertyNullableInt)] == DBNull.Value
-                    ? null
-                    : (int?)reader[nameof(entity.PropertyNullableInt)];
-                entity.PropertyNullableSmallInt = reader[nameof(entity.PropertyNullableSmallInt)] == DBNull.Value
-                    ? null
-                    : (short?)reader[nameof(entity.PropertyNullableSmallInt)];
-                entity.PropertyNullableTinyInt = reader[nameof(entity.PropertyNullableTinyInt)] == DBNull.Value
-                    ? null
-                    : (byte?)reader[nameof(entity.PropertyNullableTinyInt)];
-                entity.PropertyNullableReal = reader[nameof(entity.PropertyNullableReal)] == DBNull.Value
-                    ? null
-                    : (float?)reader[nameof(entity.PropertyNullableReal)];
-                entity.PropertyNullableFloat = reader[nameof(entity.PropertyNullableFloat)] == DBNull.Value
-                    ? null
-                    : (double?)reader[nameof(entity.PropertyNullableFloat)];
-                entity.PropertyNullableDecimal = reader[nameof(entity.PropertyNullableDecimal)] == DBNull.Value
-                    ? null
-                    : (decimal?)reader[nameof(entity.PropertyNullableDecimal)];
-                entity.PropertyNullableDateTime = reader[nameof(entity.PropertyNullableDateTime)] == DBNull.Value
-                    ? null
-                    : (DateTime?)reader[nameof(entity.PropertyNullableDateTime)];
-                entity.PropertyNullableEnum = reader[nameof(entity.PropertyNullableEnum)] == DBNull.Value
-                    ? null
-                    : (TestEnumA?)reader[nameof(entity.PropertyNullableEnum)];
+                entity.PropertyNullableBigInt = (long?)GetReaderValue(reader, nameof(entity.PropertyNullableBigInt));
+                entity.PropertyNullableInt = (int?)GetReaderValue(reader, nameof(entity.PropertyNullableInt));
+                entity.PropertyNullableSmallInt = (short?)GetReaderValue(reader, nameof(entity.PropertyNullableSmallInt));
+                entity.PropertyNullableTinyInt = (byte?)GetReaderValue(reader, nameof(entity.PropertyNullableTinyInt));
+                entity.PropertyNullableReal = (float?)GetReaderValue(reader, nameof(entity.PropertyNullableReal));
+                entity.PropertyNullableFloat = (double?)GetReaderValue(reader, nameof(entity.PropertyNullableFloat));
+                entity.PropertyNullableDecimal = (decimal?)GetReaderValue(reader, nameof(entity.PropertyNullableDecimal));
+                entity.PropertyNullableDateTime = (DateTime?)GetReaderValue(reader, nameof(entity.PropertyNullableDateTime));
+                entity.PropertyNullableEnum = (TestEnumA?)GetReaderValue(reader, nameof(entity.PropertyNullableEnum));
 
                 entities.Add(entity);
             }
