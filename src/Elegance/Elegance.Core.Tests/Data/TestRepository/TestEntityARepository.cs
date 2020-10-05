@@ -10,7 +10,30 @@ namespace Elegance.Core.Tests.Data.TestRepository
 {
     public class TestEntityARepository : BaseRepository
     {
-        private const string _testEntitySelectText = @"
+        private const string _testEntitySelectTextNonAliased = @"
+                select  tea.property_bigint,
+                        tea.property_int,
+                        tea.property_smallint,
+                        tea.property_tinyint,
+                        tea.property_real,
+                        tea.property_float,
+                        tea.property_decimal,
+                        tea.property_varchar,
+                        tea.property_datetime,
+                        tea.property_enum,
+                        tea.property_nullable_bigint,
+                        tea.property_nullable_int,
+                        tea.property_nullable_smallint,
+                        tea.property_nullable_tinyint,
+                        tea.property_nullable_real,
+                        tea.property_nullable_float,
+                        tea.property_nullable_decimal,
+                        tea.property_nullable_datetime,
+                        tea.property_nullable_enum
+
+                from    test_entity_a tea (nolock)";
+
+        private const string _testEntitySelectTextAliased = @"
                 select  tea.property_bigint                     AS PropertyBigInt,
                         tea.property_int                        AS PropertyInt,
                         tea.property_smallint                   AS PropertySmallInt,
@@ -45,12 +68,21 @@ namespace Elegance.Core.Tests.Data.TestRepository
 
         #region GetAll
 
-        public IList<TestEntityA> GetAll_Query()
+        public IList<TestEntityA> GetAll_Query_Aliased()
         {
             using var session = CreateSession();
 
             return session
-                .CreateObjectQuery<TestEntityA>(_testEntitySelectText, CommandType.Text)
+                .CreateObjectQuery<TestEntityA>(_testEntitySelectTextAliased, CommandType.Text)
+                .Results();
+        }
+
+        public IList<TestEntityA> GetAll_Query_NonAliased()
+        {
+            using var session = CreateSession();
+
+            return session
+                .CreateObjectQuery<TestEntityA>(_testEntitySelectTextNonAliased, CommandType.Text)
                 .Results();
         }
 
@@ -75,7 +107,7 @@ namespace Elegance.Core.Tests.Data.TestRepository
         {
             using var session = CreateSession();
 
-            var query = session.CreateObjectQuery<TestEntityA>(_testEntitySelectText, CommandType.Text);
+            var query = session.CreateObjectQuery<TestEntityA>(_testEntitySelectTextAliased, CommandType.Text);
             var reader = query.Reader();
 
             return ReadTestEntities(reader);
@@ -85,7 +117,7 @@ namespace Elegance.Core.Tests.Data.TestRepository
         {
             using var session = CreateSession();
             using var reader = session
-                .CreateCommand(_testEntitySelectText)
+                .CreateCommand(_testEntitySelectTextAliased)
                 .ExecuteReader();
 
             return ReadTestEntities(reader);
@@ -123,7 +155,7 @@ namespace Elegance.Core.Tests.Data.TestRepository
         public TestEntityA GetByAllProperties_Query(TestEntityA testEntity)
         {
             var sql = new StringBuilder()
-                .AppendLine(_testEntitySelectText)
+                .AppendLine(_testEntitySelectTextAliased)
                 .AppendLine("where tea.property_bigint = @property_bigint")
                 .AppendLine("and tea.property_int = @property_int")
                 .AppendLine("and tea.property_smallint = @property_smallint")
@@ -237,7 +269,7 @@ namespace Elegance.Core.Tests.Data.TestRepository
         public TestEntityA GetByAllProperties_Standard(TestEntityA testEntity)
         {
             var sql = new StringBuilder()
-                .AppendLine(_testEntitySelectText)
+                .AppendLine(_testEntitySelectTextAliased)
                 .AppendLine("where tea.property_bigint = @property_bigint")
                 .AppendLine("and tea.property_int = @property_int")
                 .AppendLine("and tea.property_smallint = @property_smallint")
