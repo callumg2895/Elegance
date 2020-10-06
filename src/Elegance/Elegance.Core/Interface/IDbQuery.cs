@@ -20,7 +20,7 @@ namespace Elegance.Core.Interface
         /// <param name="name">The name of the parameter.</param>
         /// <param name="value">The value of the parameter.</param>
         /// <returns>The associated IDbQuery instance containing this parameter.</returns>
-        public IDbQuery<T> SetParameter<TParam>(string name, TParam value) where TParam : IConvertible;
+        public IDbQuery<T> SetParameter<TParam>(string name, TParam value);
 
         /// <summary>
         /// Adds a new parameter to the internal database command, with the corresponding name and value. If 
@@ -31,7 +31,7 @@ namespace Elegance.Core.Interface
         /// <param name="value">The value of the parameter.</param>
         /// <param name="dbTypeOverride">The 'DbType' value to use for the parameter.</param>
         /// <returns>The associated IDbQuery instance containing this parameter.</returns>
-        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, DbType? dbTypeOverride) where TParam : IConvertible;
+        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, DbType? dbTypeOverride);
 
         /// <summary>
         /// Adds a new parameter to the internal database command, with the corresponding name and value. If
@@ -42,7 +42,7 @@ namespace Elegance.Core.Interface
         /// <param name="value">The value of the parameter.</param>
         /// <param name="directionOverride">The 'ParameterDirection' value to use for the parameter.</param>
         /// <returns>The associated IDbQuery instance containing this parameter.</returns>
-        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, ParameterDirection? directionOverride) where TParam : IConvertible;
+        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, ParameterDirection? directionOverride);
 
         /// <summary>
         /// Adds a new parameter to the internal database command, with the corresponding name and value. If 
@@ -55,7 +55,7 @@ namespace Elegance.Core.Interface
         /// <param name="dbTypeOverride">The 'DbType' value to use for the parameter.</param>
         /// <param name="directionOverride">The 'ParameterDirection' value to use for the parameter.</param>
         /// <returns>The associated IDbQuery instance containing this parameter.</returns>
-        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, DbType? dbTypeOverride, ParameterDirection? directionOverride) where TParam : IConvertible;
+        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, DbType? dbTypeOverride, ParameterDirection? directionOverride);
 
         /// <summary>
         /// Adds a new parameter to the internal database command, with the corresponding name and value. If
@@ -67,7 +67,7 @@ namespace Elegance.Core.Interface
         /// <param name="value">The value of the parameter.</param>
         /// <param name="options">The object containing override values for the parameter.</param>
         /// <returns>The associated IDbQuery instance containing this parameter.</returns>
-        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, IDbQueryParameterOptions options) where TParam : IConvertible;
+        public IDbQuery<T> SetParameter<TParam>(string name, TParam value, IDbQueryParameterOptions options);
 
         /// <summary>
         /// Adds a new parameter to the internal database command, defined by the provided 'IDbQueryParameter'
@@ -89,7 +89,7 @@ namespace Elegance.Core.Interface
         /// command has been executed, in order to get the value of the out parameters. Eg: in the case where
         /// a stored procedure has been run.
         /// </remarks>
-        public TParam GetParameter<TParam>(string name) where TParam : IConvertible;
+        public TParam GetParameter<TParam>(string name);
 
         /// <summary>
         /// Retrieves the first result (or null if no results were found) for the query.

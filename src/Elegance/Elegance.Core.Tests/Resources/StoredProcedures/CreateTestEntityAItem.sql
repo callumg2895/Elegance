@@ -18,7 +18,16 @@ CREATE PROCEDURE [dbo].CreateTestEntityAItem    @result_status	int				= null out
                                                 @property_decimal decimal,
                                                 @property_varchar varchar(255),
                                                 @property_datetime datetime2,
-                                                @property_enum int
+                                                @property_enum int,
+                                                @property_nullable_bigint bigint,
+                                                @property_nullable_int int,
+                                                @property_nullable_smallint smallint,
+                                                @property_nullable_tinyint tinyint,
+                                                @property_nullable_real real,
+                                                @property_nullable_float float,
+                                                @property_nullable_decimal decimal,
+                                                @property_nullable_datetime datetime2,
+                                                @property_nullable_enum int
 AS
 BEGIN
     SET @result_status = 0;
@@ -35,7 +44,16 @@ BEGIN
             property_decimal,
             property_varchar,
             property_datetime,
-            property_enum
+            property_enum,
+            property_nullable_bigint,
+            property_nullable_int,
+            property_nullable_smallint,
+            property_nullable_tinyint,
+            property_nullable_real,
+            property_nullable_float,
+            property_nullable_decimal,
+            property_nullable_datetime,
+            property_nullable_enum
     )
     VALUES
     (
@@ -48,7 +66,16 @@ BEGIN
         @property_decimal,
         @property_varchar,
         @property_datetime,
-        @property_enum
+        @property_enum,
+        @property_nullable_bigint,
+        @property_nullable_int,
+        @property_nullable_smallint,
+        @property_nullable_tinyint,
+        @property_nullable_real,
+        @property_nullable_float,
+        @property_nullable_decimal,
+        @property_nullable_datetime,
+        @property_nullable_enum
     )
 END
 GO

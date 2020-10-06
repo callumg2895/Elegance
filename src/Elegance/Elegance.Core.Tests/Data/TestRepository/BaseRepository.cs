@@ -3,6 +3,8 @@ using Elegance.Core.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace Elegance.Core.Tests.Data.TestRepository
 {
@@ -25,6 +27,27 @@ namespace Elegance.Core.Tests.Data.TestRepository
         protected IDbSession CreateSession()
         {
             return _dbSessionFactory.CreateSession();
+        }
+
+        protected object GetReaderValue(IDataReader reader, string name)
+        {
+            return reader[name] == DBNull.Value
+                ? null
+                : reader[name];
+        }
+
+        protected SqlParameter GetParameter<T>(string name, T value, DbType dbType)
+        {
+
+
+            return new SqlParameter
+            {
+                ParameterName = name,
+                Value = value == null 
+                    ? DBNull.Value
+                    : (object)value,
+                DbType = dbType
+            };
         }
     }
 }
