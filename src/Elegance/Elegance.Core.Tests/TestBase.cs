@@ -18,6 +18,7 @@ namespace Elegance.Core.Tests
 
         protected static readonly ResourceRepository _resourceRepository;
         protected static readonly TestEntityARepository _testEntityARepository;
+        protected static readonly TestEntityBRepository _testEntityBRepository;
 
         static TestBase()
         {
@@ -25,6 +26,7 @@ namespace Elegance.Core.Tests
 
             _resourceRepository = new ResourceRepository();
             _testEntityARepository = new TestEntityARepository();
+            _testEntityBRepository = new TestEntityBRepository();
         }
 
         public TestBase()
@@ -36,6 +38,7 @@ namespace Elegance.Core.Tests
         public static void AssemblyInitialize(TestContext context)
         {
             _resourceRepository.LoadStaticData("CreateTestEntityATable");
+            _resourceRepository.LoadStaticData("CreateTestEntityBTable");
             _resourceRepository.LoadStoredProcedure("GetTestEntityAItems");
             _resourceRepository.LoadStoredProcedure("CreateTestEntityAItem");
         }
@@ -48,13 +51,13 @@ namespace Elegance.Core.Tests
         }
 
         [TestInitialize]
-        public void TestInitialize()
+        public virtual void TestInitialize()
         {
             
         }
 
         [TestCleanup]
-        public void TestCleanup()
+        public virtual void TestCleanup()
         {
             while (_cleanupActions.TryDequeue(out Action action))
             {

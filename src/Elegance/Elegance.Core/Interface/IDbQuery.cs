@@ -106,7 +106,7 @@ namespace Elegance.Core.Interface
         /// <summary>
         /// Retrieves the internal data reader used for the query.
         /// </summary>
-        /// <returns>The internal IDataReader instance.</returns>
-        public IDataReader Reader();
+        /// <returns>The internal IDbDataReader instance.</returns>
+        public IDbDataReader Reader();
     }
 }

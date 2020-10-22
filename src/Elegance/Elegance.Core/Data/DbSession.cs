@@ -52,7 +52,7 @@ namespace Elegance.Core.Data
 
         public IDbQuery<T> CreateObjectQuery<T>(string commandText, CommandType commandType) where T : new()
         {
-            var query = new ObjectDbQuery<T>(_dbConnection, _dbTransaction, commandText, commandType);
+            var query = new ObjectDbQuery<T>(this, _dbConnection, _dbTransaction, commandText, commandType);
 
             _disposables.Add(query);
 
@@ -61,7 +61,7 @@ namespace Elegance.Core.Data
 
         public IDbQuery<T> CreateScalarQuery<T>(string commandText, CommandType commandType) where T : IConvertible
         {
-            var query = new ScalarDbQuery<T>(_dbConnection, _dbTransaction, commandText, commandType);
+            var query = new ScalarDbQuery<T>(this, _dbConnection, _dbTransaction, commandText, commandType);
 
             _disposables.Add(query);
 
@@ -70,7 +70,7 @@ namespace Elegance.Core.Data
 
         public IDbNonQuery CreateNonQuery(string commandText, CommandType commandType)
         {
-            var nonQuery = new DbNonQuery(_dbConnection, _dbTransaction, commandText, commandType);
+            var nonQuery = new DbNonQuery(this, _dbConnection, _dbTransaction, commandText, commandType);
 
             _disposables.Add(nonQuery);
 

@@ -8,13 +8,17 @@ namespace Elegance.Core.Data.Query
 {
     internal class ScalarDbQuery<T> : DbQuery<T> where T : IConvertible
     {
-        internal ScalarDbQuery(IDbConnection connection, IDbTransaction transaction, string commandText, CommandType commandType)
-            : base(connection, transaction, commandText, commandType)
+        internal ScalarDbQuery( IDbSession session, 
+                                IDbConnection connection, 
+                                IDbTransaction transaction, 
+                                string commandText, 
+                                CommandType commandType)
+            : base(session, connection, transaction, commandText, commandType)
         {
 
         }
 
-        protected override IList<T> GetResultFromReader(IDataReader reader)
+        protected override IList<T> GetResultFromReader(IDbDataReader reader)
         {
             var results = new List<T>();
 

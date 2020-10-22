@@ -34,27 +34,29 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 from    test_entity_a tea (nolock)";
 
         private const string _testEntitySelectTextAliased = @"
-                select  tea.property_bigint                     AS PropertyBigInt,
-                        tea.property_int                        AS PropertyInt,
-                        tea.property_smallint                   AS PropertySmallInt,
-                        tea.property_tinyint                    AS PropertyTinyInt,
-                        tea.property_real                       AS PropertyReal,
-                        tea.property_float                      AS PropertyFloat,
-                        tea.property_decimal                    AS PropertyDecimal,
-                        tea.property_varchar                    AS PropertyVarChar,
-                        tea.property_datetime                   AS PropertyDateTime,
-                        tea.property_enum                       AS PropertyEnum,
-                        tea.property_nullable_bigint            AS PropertyNullableBigInt,
-                        tea.property_nullable_int               AS PropertyNullableInt,
-                        tea.property_nullable_smallint          AS PropertyNullableSmallInt,
-                        tea.property_nullable_tinyint           AS PropertyNullableTinyInt,
-                        tea.property_nullable_real              AS PropertyNullableReal,
-                        tea.property_nullable_float             AS PropertyNullableFloat,
-                        tea.property_nullable_decimal           AS PropertyNullableDecimal,
-                        tea.property_nullable_datetime          AS PropertyNullableDateTime,
-                        tea.property_nullable_enum              AS PropertyNullableEnum
+                select      tea.property_bigint                     AS PropertyBigInt,
+                            tea.property_int                        AS PropertyInt,
+                            tea.property_smallint                   AS PropertySmallInt,
+                            tea.property_tinyint                    AS PropertyTinyInt,
+                            tea.property_real                       AS PropertyReal,
+                            tea.property_float                      AS PropertyFloat,
+                            tea.property_decimal                    AS PropertyDecimal,
+                            tea.property_varchar                    AS PropertyVarChar,
+                            tea.property_datetime                   AS PropertyDateTime,
+                            tea.property_enum                       AS PropertyEnum,
+                            tea.property_nullable_bigint            AS PropertyNullableBigInt,
+                            tea.property_nullable_int               AS PropertyNullableInt,
+                            tea.property_nullable_smallint          AS PropertyNullableSmallInt,
+                            tea.property_nullable_tinyint           AS PropertyNullableTinyInt,
+                            tea.property_nullable_real              AS PropertyNullableReal,
+                            tea.property_nullable_float             AS PropertyNullableFloat,
+                            tea.property_nullable_decimal           AS PropertyNullableDecimal,
+                            tea.property_nullable_datetime          AS PropertyNullableDateTime,
+                            tea.property_nullable_enum              AS PropertyNullableEnum,
+                            teb.property_bigint                     AS TestEntityB_PropertyBigInt
 
-                from    test_entity_a tea (nolock)";
+                from        test_entity_a tea (nolock)
+                left join   test_entity_b teb (nolock)              on tea.property_bigint = teb.property_bigint";
 
         private const string _testEntitySelectCountText = @"
                 select  count(*)
@@ -110,17 +112,27 @@ namespace Elegance.Core.Tests.Data.TestRepository
             var query = session.CreateObjectQuery<TestEntityA>(_testEntitySelectTextAliased, CommandType.Text);
             var reader = query.Reader();
 
-            return ReadTestEntities(reader);
+            return ReadTestEntitiesAliased(reader);
         }
 
-        public IList<TestEntityA> GetAll_Standard()
+        public IList<TestEntityA> GetAll_Standard_Aliased()
         {
             using var session = CreateSession();
             using var reader = session
                 .CreateCommand(_testEntitySelectTextAliased)
                 .ExecuteReader();
 
-            return ReadTestEntities(reader);
+            return ReadTestEntitiesAliased(reader);
+        }
+
+        public IList<TestEntityA> GetAll_Standard_NonAliased()
+        {
+            using var session = CreateSession();
+            using var reader = session
+                .CreateCommand(_testEntitySelectTextNonAliased)
+                .ExecuteReader();
+
+            return ReadTestEntitiesNonAliased(reader);
         }
 
         #endregion
@@ -343,7 +355,7 @@ namespace Elegance.Core.Tests.Data.TestRepository
 
             using var reader = command.ExecuteReader();
 
-            return ReadTestEntities(reader).FirstOrDefault();
+            return ReadTestEntitiesAliased(reader).FirstOrDefault();
         }
 
         #endregion
@@ -478,40 +490,96 @@ namespace Elegance.Core.Tests.Data.TestRepository
 
         #region Helpers
 
-        private IList<TestEntityA> ReadTestEntities(IDataReader reader)
+        private IList<TestEntityA> ReadTestEntitiesAliased(IDataReader reader)
+        {
+            var entityALookup = new Dictionary<long, TestEntityA>();
+            var entityBLookup = new Dictionary<long, TestEntityB>();
+            var entities = new List<TestEntityA>();
+
+            while (reader.Read())
+            {
+                var entityABigInt = (long)GetReaderValue(reader, nameof(TestEntityA.PropertyBigInt));
+                var entityBBigInt = (long?)GetReaderValue(reader, $"{nameof(TestEntityB)}_{nameof(TestEntityB.PropertyBigInt)}");
+
+                if (!entityALookup.TryGetValue(entityABigInt, out TestEntityA entityA))
+                {
+                    entityA = new TestEntityA();
+
+                    entityA.PropertyBigInt = entityABigInt;
+                    entityA.PropertyInt = (int)GetReaderValue(reader, nameof(TestEntityA.PropertyInt));
+                    entityA.PropertySmallInt = (short)GetReaderValue(reader, nameof(TestEntityA.PropertySmallInt));
+                    entityA.PropertyTinyInt = (byte)GetReaderValue(reader, nameof(TestEntityA.PropertyTinyInt));
+                    entityA.PropertyReal = (float)GetReaderValue(reader, nameof(TestEntityA.PropertyReal));
+                    entityA.PropertyFloat = (double)GetReaderValue(reader, nameof(TestEntityA.PropertyFloat));
+                    entityA.PropertyDecimal = (decimal)GetReaderValue(reader, nameof(TestEntityA.PropertyDecimal));
+                    entityA.PropertyVarChar = (string)GetReaderValue(reader, nameof(TestEntityA.PropertyVarChar));
+                    entityA.PropertyDateTime = (DateTime)GetReaderValue(reader, nameof(TestEntityA.PropertyDateTime));
+                    entityA.PropertyEnum = (TestEnumA)(int)GetReaderValue(reader, nameof(TestEntityA.PropertyEnum));
+
+                    entityA.PropertyNullableBigInt = (long?)GetReaderValue(reader, nameof(TestEntityA.PropertyNullableBigInt));
+                    entityA.PropertyNullableInt = (int?)GetReaderValue(reader, nameof(TestEntityA.PropertyNullableInt));
+                    entityA.PropertyNullableSmallInt = (short?)GetReaderValue(reader, nameof(TestEntityA.PropertyNullableSmallInt));
+                    entityA.PropertyNullableTinyInt = (byte?)GetReaderValue(reader, nameof(TestEntityA.PropertyNullableTinyInt));
+                    entityA.PropertyNullableReal = (float?)GetReaderValue(reader, nameof(TestEntityA.PropertyNullableReal));
+                    entityA.PropertyNullableFloat = (double?)GetReaderValue(reader, nameof(TestEntityA.PropertyNullableFloat));
+                    entityA.PropertyNullableDecimal = (decimal?)GetReaderValue(reader, nameof(TestEntityA.PropertyNullableDecimal));
+                    entityA.PropertyNullableDateTime = (DateTime?)GetReaderValue(reader, nameof(TestEntityA.PropertyNullableDateTime));
+                    entityA.PropertyNullableEnum = (TestEnumA?)GetReaderValue(reader, nameof(TestEntityA.PropertyNullableEnum));
+
+                    entityALookup.Add(entityABigInt, entityA);
+                    entities.Add(entityA);
+                }
+
+                if (entityBBigInt.HasValue && !entityBLookup.TryGetValue(entityBBigInt.Value, out TestEntityB entityB))
+                {
+                    entityB = new TestEntityB();
+
+                    entityB.PropertyBigInt = entityBBigInt.Value;
+
+                    entityA.TestEntityB = entityB;
+                    entityBLookup.Add(entityBBigInt.Value, entityB);
+                }
+                
+            }
+
+            return entities;
+        }
+
+        private IList<TestEntityA> ReadTestEntitiesNonAliased(IDataReader reader)
         {
             var entities = new List<TestEntityA>();
 
             while (reader.Read())
             {
-                var entity = new TestEntityA();
+                var entityA = new TestEntityA();
 
-                entity.PropertyBigInt = (long)GetReaderValue(reader, nameof(entity.PropertyBigInt));
-                entity.PropertyInt = (int)GetReaderValue(reader, nameof(entity.PropertyInt));
-                entity.PropertySmallInt = (short)GetReaderValue(reader, nameof(entity.PropertySmallInt));
-                entity.PropertyTinyInt = (byte)GetReaderValue(reader, nameof(entity.PropertyTinyInt));
-                entity.PropertyReal = (float)GetReaderValue(reader, nameof(entity.PropertyReal));
-                entity.PropertyFloat = (double)GetReaderValue(reader, nameof(entity.PropertyFloat));
-                entity.PropertyDecimal = (decimal)GetReaderValue(reader, nameof(entity.PropertyDecimal));
-                entity.PropertyVarChar = (string)GetReaderValue(reader, nameof(entity.PropertyVarChar));
-                entity.PropertyDateTime = (DateTime)GetReaderValue(reader, nameof(entity.PropertyDateTime));
-                entity.PropertyEnum = (TestEnumA)(int)GetReaderValue(reader, nameof(entity.PropertyEnum));
+                entityA.PropertyBigInt = (long)GetReaderValue(reader, "property_bigint");
+                entityA.PropertyInt = (int)GetReaderValue(reader, "property_int");
+                entityA.PropertySmallInt = (short)GetReaderValue(reader, "property_smallint");
+                entityA.PropertyTinyInt = (byte)GetReaderValue(reader, "property_tinyint");
+                entityA.PropertyReal = (float)GetReaderValue(reader, "property_real");
+                entityA.PropertyFloat = (double)GetReaderValue(reader, "property_float");
+                entityA.PropertyDecimal = (decimal)GetReaderValue(reader, "property_decimal");
+                entityA.PropertyVarChar = (string)GetReaderValue(reader, "property_varchar");
+                entityA.PropertyDateTime = (DateTime)GetReaderValue(reader, "property_datetime");
+                entityA.PropertyEnum = (TestEnumA)(int)GetReaderValue(reader, "property_enum");
 
-                entity.PropertyNullableBigInt = (long?)GetReaderValue(reader, nameof(entity.PropertyNullableBigInt));
-                entity.PropertyNullableInt = (int?)GetReaderValue(reader, nameof(entity.PropertyNullableInt));
-                entity.PropertyNullableSmallInt = (short?)GetReaderValue(reader, nameof(entity.PropertyNullableSmallInt));
-                entity.PropertyNullableTinyInt = (byte?)GetReaderValue(reader, nameof(entity.PropertyNullableTinyInt));
-                entity.PropertyNullableReal = (float?)GetReaderValue(reader, nameof(entity.PropertyNullableReal));
-                entity.PropertyNullableFloat = (double?)GetReaderValue(reader, nameof(entity.PropertyNullableFloat));
-                entity.PropertyNullableDecimal = (decimal?)GetReaderValue(reader, nameof(entity.PropertyNullableDecimal));
-                entity.PropertyNullableDateTime = (DateTime?)GetReaderValue(reader, nameof(entity.PropertyNullableDateTime));
-                entity.PropertyNullableEnum = (TestEnumA?)GetReaderValue(reader, nameof(entity.PropertyNullableEnum));
+                entityA.PropertyNullableBigInt = (long?)GetReaderValue(reader, "property_nullable_bigint");
+                entityA.PropertyNullableInt = (int?)GetReaderValue(reader, "property_nullable_int");
+                entityA.PropertyNullableSmallInt = (short?)GetReaderValue(reader, "property_nullable_smallint");
+                entityA.PropertyNullableTinyInt = (byte?)GetReaderValue(reader, "property_nullable_tinyint");
+                entityA.PropertyNullableReal = (float?)GetReaderValue(reader, "property_nullable_real");
+                entityA.PropertyNullableFloat = (double?)GetReaderValue(reader, "property_nullable_float");
+                entityA.PropertyNullableDecimal = (decimal?)GetReaderValue(reader, "property_nullable_decimal");
+                entityA.PropertyNullableDateTime = (DateTime?)GetReaderValue(reader, "property_nullable_datetime");
+                entityA.PropertyNullableEnum = (TestEnumA?)GetReaderValue(reader, "property_nullable_enum");
 
-                entities.Add(entity);
+                entities.Add(entityA);
             }
 
             return entities;
         }
+
 
         #endregion
     }
