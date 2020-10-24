@@ -19,6 +19,7 @@ namespace Elegance.Core.Tests
         protected static readonly ResourceRepository _resourceRepository;
         protected static readonly TestEntityARepository _testEntityARepository;
         protected static readonly TestEntityBRepository _testEntityBRepository;
+        protected static readonly TestEntityCRepository _testEntityCRepository;
 
         static TestBase()
         {
@@ -27,6 +28,7 @@ namespace Elegance.Core.Tests
             _resourceRepository = new ResourceRepository();
             _testEntityARepository = new TestEntityARepository();
             _testEntityBRepository = new TestEntityBRepository();
+            _testEntityCRepository = new TestEntityCRepository();
         }
 
         public TestBase()
@@ -39,6 +41,7 @@ namespace Elegance.Core.Tests
         {
             _resourceRepository.LoadStaticData("CreateTestEntityATable");
             _resourceRepository.LoadStaticData("CreateTestEntityBTable");
+            _resourceRepository.LoadStaticData("CreateTestEntityCTable");
             _resourceRepository.LoadStoredProcedure("GetTestEntityAItems");
             _resourceRepository.LoadStoredProcedure("CreateTestEntityAItem");
         }

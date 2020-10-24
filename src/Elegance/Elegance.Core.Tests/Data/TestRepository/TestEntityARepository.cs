@@ -53,10 +53,13 @@ namespace Elegance.Core.Tests.Data.TestRepository
                             tea.property_nullable_decimal           AS PropertyNullableDecimal,
                             tea.property_nullable_datetime          AS PropertyNullableDateTime,
                             tea.property_nullable_enum              AS PropertyNullableEnum,
-                            teb.property_bigint                     AS TestEntityB_PropertyBigInt
+                            teb.property_bigint                     AS TestEntityB_PropertyBigInt,
+                            tec.property_bigint                     AS TestEntityC_PropertyBigInt
 
                 from        test_entity_a tea (nolock)
-                left join   test_entity_b teb (nolock)              on tea.property_bigint = teb.property_bigint";
+                left join   test_entity_b teb (nolock)              on tea.property_bigint = teb.property_bigint
+                left join   test_entity_c tec (nolock)              on tea.property_bigint = tec.property_bigint";
+
 
         private const string _testEntitySelectCountText = @"
                 select  count(*)
@@ -494,12 +497,14 @@ namespace Elegance.Core.Tests.Data.TestRepository
         {
             var entityALookup = new Dictionary<long, TestEntityA>();
             var entityBLookup = new Dictionary<long, TestEntityB>();
+            var entityCLookup = new Dictionary<long, TestEntityC>();
             var entities = new List<TestEntityA>();
 
             while (reader.Read())
             {
                 var entityABigInt = (long)GetReaderValue(reader, nameof(TestEntityA.PropertyBigInt));
                 var entityBBigInt = (long?)GetReaderValue(reader, $"{nameof(TestEntityB)}_{nameof(TestEntityB.PropertyBigInt)}");
+                var entityCBigInt = (long?)GetReaderValue(reader, $"{nameof(TestEntityC)}_{nameof(TestEntityC.PropertyBigInt)}");
 
                 if (!entityALookup.TryGetValue(entityABigInt, out TestEntityA entityA))
                 {
@@ -539,7 +544,16 @@ namespace Elegance.Core.Tests.Data.TestRepository
                     entityA.TestEntityB = entityB;
                     entityBLookup.Add(entityBBigInt.Value, entityB);
                 }
-                
+
+                if (entityCBigInt.HasValue && !entityCLookup.TryGetValue(entityCBigInt.Value, out TestEntityC entityC))
+                {
+                    entityC = new TestEntityC();
+
+                    entityC.PropertyBigInt = entityCBigInt.Value;
+
+                    entityA.TestEntityC = entityC;
+                    entityCLookup.Add(entityCBigInt.Value, entityC);
+                }
             }
 
             return entities;

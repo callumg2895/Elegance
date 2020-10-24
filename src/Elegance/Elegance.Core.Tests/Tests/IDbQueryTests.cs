@@ -25,6 +25,7 @@ namespace Elegance.Core.Tests.Tests
 
             AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
             AddCleanupAction(() => { _testEntityBRepository.DeleteTestEntities(); });
+            AddCleanupAction(() => { _testEntityCRepository.DeleteTestEntities(); });
         }
 
         /// <summary>
@@ -230,6 +231,11 @@ namespace Elegance.Core.Tests.Tests
 
             };
 
+            var testEntityC = new TestEntityC()
+            {
+
+            };
+
             var testEntityA = new TestEntityA()
             {
                 PropertyBigInt = seed,
@@ -252,6 +258,7 @@ namespace Elegance.Core.Tests.Tests
                 PropertyNullableDateTime = DateTime.Now.AddDays(seed),
 
                 TestEntityB = testEntityB,
+                TestEntityC = testEntityC,
             };
 
             if (seed % 2 == 0)
@@ -278,11 +285,13 @@ namespace Elegance.Core.Tests.Tests
             }
 
             testEntityB.PropertyBigInt = testEntityA.PropertyBigInt;
+            testEntityC.PropertyBigInt = testEntityA.PropertyBigInt;
 
             if (insert)
             {
                 _testEntityARepository.InsertTestEntity_Standard(testEntityA);
                 _testEntityBRepository.InsertTestEntity_Standard(testEntityB);
+                _testEntityCRepository.InsertTestEntity_Standard(testEntityC);
             }
 
             return testEntityA;
@@ -312,6 +321,7 @@ namespace Elegance.Core.Tests.Tests
             Assert.AreEqual(expected.PropertyNullableEnum, actual.PropertyNullableEnum, $"Expected {expected.PropertyNullableEnum}, but got {actual.PropertyNullableEnum} for {nameof(TestEntityA.PropertyNullableEnum)}");
 
             AssertAreEqual(expected.TestEntityB, actual.TestEntityB);
+            AssertAreEqual(expected.TestEntityC, actual.TestEntityC);
         }
 
         private void AssertAreEqual(TestEntityB expected, TestEntityB actual)
@@ -323,6 +333,18 @@ namespace Elegance.Core.Tests.Tests
             else
             {
                 Assert.AreEqual(expected.PropertyBigInt, actual.PropertyBigInt, $"Expected {expected.PropertyBigInt}, but got {actual.PropertyBigInt} for {nameof(TestEntityB.PropertyBigInt)}");
+            }
+        }
+
+        private void AssertAreEqual(TestEntityC expected, TestEntityC actual)
+        {
+            if (expected == null)
+            {
+                Assert.IsNull(actual, $"Expected actual value to be null");
+            }
+            else
+            {
+                Assert.AreEqual(expected.PropertyBigInt, actual.PropertyBigInt, $"Expected {expected.PropertyBigInt}, but got {actual.PropertyBigInt} for {nameof(TestEntityC.PropertyBigInt)}");
             }
         }
     }
