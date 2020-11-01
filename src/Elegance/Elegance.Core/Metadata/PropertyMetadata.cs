@@ -1,6 +1,7 @@
 ﻿using Elegance.Core.Attributes;
 using Elegance.Core.Interface;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -46,6 +47,14 @@ namespace Elegance.Core.Metadata
             : this()
         {
             var propertyType = property.PropertyType;
+
+            IsCollection = typeof(IList).IsAssignableFrom(propertyType);
+
+            if (IsCollection)
+            {
+                propertyType = propertyType.GenericTypeArguments[0];          
+            }
+
             var nullUnderlyingType = Nullable.GetUnderlyingType(propertyType);
             var enumUnderlyingType = (nullUnderlyingType ?? propertyType).IsEnum
                 ? (nullUnderlyingType ?? propertyType).GetEnumUnderlyingType()
@@ -55,7 +64,7 @@ namespace Elegance.Core.Metadata
             Property = property;
             IsComplex = !_primitiveTypes.Contains(propertyType) && !_primitiveTypes.Contains(nullUnderlyingType) && !_primitiveTypes.Contains(enumUnderlyingType);
             IsEnum = enumUnderlyingType != null;
-            Type = property.PropertyType;
+            Type = propertyType;
             UnderlyingType = enumUnderlyingType ?? nullUnderlyingType ?? propertyType;
 
             UpdateAliasOptions();
@@ -64,6 +73,7 @@ namespace Elegance.Core.Metadata
         public ObjectMetadata ObjectMetadata { get; private set; }
         public PropertyInfo Property { get; private set; }
         public bool IsComplex { get; private set; }
+        public bool IsCollection { get; private set; }
         public bool IsEnum { get; private set; }
         public Type Type { get; private set; }
         public Type UnderlyingType { get; private set; }
@@ -91,11 +101,11 @@ namespace Elegance.Core.Metadata
 
             while (currentParent != null && currentType != null)
             {
-                var parentProperty = currentParent
+                var aliases = currentParent
                     .GetComplexProperties()
-                    .FirstOrDefault(p => p.PropertyType == currentType);
-                var parentPropertyMetadata = currentParent.GetMetadata(parentProperty);
-                var aliases = parentPropertyMetadata.Aliases
+                    .Select(p => currentParent.GetMetadata(p))
+                    .Where(p => p.Type == currentType)
+                    .SelectMany(p => p.Aliases)
                     .SelectMany(parentAlias => Aliases.Select(alias => $"{parentAlias}_{alias}"))
                     .ToList();
 

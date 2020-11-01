@@ -53,11 +53,17 @@ BEGIN
                 tea.property_nullable_datetime          AS PropertyNullableDateTime,
                 tea.property_nullable_enum              AS PropertyNullableEnum,
                 teb.property_bigint                     AS TestEntityB_PropertyBigInt,
-                tec.property_bigint                     AS TestEntityC_PropertyBigInt
+                tec.property_bigint                     AS TestEntityC_PropertyBigInt,
+                ted.property_bigint                     AS TestEntityD_PropertyBigInt,
+                ted.property_varchar                    AS TestEntityD_PropertyVarChar,
+                tee.property_bigint                     AS TestEntityE_PropertyBigInt,
+                tee.property_varchar                    AS TestEntityE_PropertyVarChar
 
     FROM        test_entity_a tea (NOLOCK)
     LEFT JOIN   test_entity_b teb (NOLOCK)              ON tea.property_bigint = teb.property_bigint
     LEFT JOIN   test_entity_c tec (NOLOCK)              ON tea.property_bigint = tec.property_bigint
+    LEFT JOIN   test_entity_d ted (NOLOCK)              ON tea.property_bigint = ted.property_bigint
+    LEFT JOIN   test_entity_e tee (NOLOCK)              ON tea.property_bigint = tee.property_bigint
 
     WHERE       0=0
     AND         tea.property_bigint = COALESCE(@property_bigint, tea.property_bigint)

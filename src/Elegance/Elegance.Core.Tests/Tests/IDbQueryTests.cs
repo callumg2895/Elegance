@@ -26,6 +26,8 @@ namespace Elegance.Core.Tests.Tests
             AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
             AddCleanupAction(() => { _testEntityBRepository.DeleteTestEntities(); });
             AddCleanupAction(() => { _testEntityCRepository.DeleteTestEntities(); });
+            AddCleanupAction(() => { _testEntityDRepository.DeleteTestEntities(); });
+            AddCleanupAction(() => { _testEntityERepository.DeleteTestEntities(); });
         }
 
         /// <summary>
@@ -242,9 +244,9 @@ namespace Elegance.Core.Tests.Tests
                 PropertyInt = seed,
                 PropertySmallInt = (short)(seed % short.MaxValue),
                 PropertyTinyInt = (byte)(seed % byte.MaxValue),
-                PropertyReal = seed/float.MaxValue,
-                PropertyFloat = seed/double.MaxValue,
-                PropertyDecimal = seed/decimal.MaxValue,
+                PropertyReal = seed / float.MaxValue,
+                PropertyFloat = seed / double.MaxValue,
+                PropertyDecimal = seed / decimal.MaxValue,
                 PropertyVarChar = $"{seed}",
                 PropertyDateTime = DateTime.Now.AddDays(seed),
 
@@ -259,6 +261,9 @@ namespace Elegance.Core.Tests.Tests
 
                 TestEntityB = testEntityB,
                 TestEntityC = testEntityC,
+
+                TestEntityDList = new List<TestEntityD>(),
+                TestEntityEList = new List<TestEntityE>(),
             };
 
             if (seed % 2 == 0)
@@ -287,12 +292,38 @@ namespace Elegance.Core.Tests.Tests
             testEntityB.PropertyBigInt = testEntityA.PropertyBigInt;
             testEntityC.PropertyBigInt = testEntityA.PropertyBigInt;
 
+            for (int i = 0; i < 5; i++)
+            {
+                var testEntityD = new TestEntityD()
+                {
+                    PropertyBigInt = testEntityA.PropertyBigInt,
+                    PropertyVarChar = $"{seed}_{i}",
+                };
+
+                var testEntityE = new TestEntityE()
+                {
+                    PropertyBigInt = testEntityA.PropertyBigInt,
+                    PropertyVarChar = $"{seed}_{i}",
+                };
+
+                testEntityA.TestEntityDList.Add(testEntityD);
+                testEntityA.TestEntityEList.Add(testEntityE);
+
+                if (insert)
+                {
+                    _testEntityDRepository.InsertTestEntity_Standard(testEntityD);
+                    _testEntityERepository.InsertTestEntity_Standard(testEntityE);
+                }
+            }
+
             if (insert)
             {
                 _testEntityARepository.InsertTestEntity_Standard(testEntityA);
                 _testEntityBRepository.InsertTestEntity_Standard(testEntityB);
                 _testEntityCRepository.InsertTestEntity_Standard(testEntityC);
             }
+
+
 
             return testEntityA;
         }
@@ -322,6 +353,25 @@ namespace Elegance.Core.Tests.Tests
 
             AssertAreEqual(expected.TestEntityB, actual.TestEntityB);
             AssertAreEqual(expected.TestEntityC, actual.TestEntityC);
+
+            Assert.AreEqual(expected.TestEntityDList?.Count, actual.TestEntityDList?.Count);
+            Assert.AreEqual(expected.TestEntityEList?.Count, actual.TestEntityEList?.Count);
+
+            if (expected.TestEntityDList != null)
+            {
+                for (int i = 0; i < expected.TestEntityDList.Count; i++)
+                {
+                    AssertAreEqual(expected.TestEntityDList[i], actual.TestEntityDList[i]);
+                }
+            }
+
+            if (expected.TestEntityEList != null)
+            {
+                for (int i = 0; i < expected.TestEntityEList.Count; i++)
+                {
+                    AssertAreEqual(expected.TestEntityEList[i], actual.TestEntityEList[i]);
+                }
+            }
         }
 
         private void AssertAreEqual(TestEntityB expected, TestEntityB actual)
@@ -345,6 +395,32 @@ namespace Elegance.Core.Tests.Tests
             else
             {
                 Assert.AreEqual(expected.PropertyBigInt, actual.PropertyBigInt, $"Expected {expected.PropertyBigInt}, but got {actual.PropertyBigInt} for {nameof(TestEntityC.PropertyBigInt)}");
+            }
+        }
+
+        private void AssertAreEqual(TestEntityD expected, TestEntityD actual)
+        {
+            if (expected == null)
+            {
+                Assert.IsNull(actual, $"Expected actual value to be null");
+            }
+            else
+            {
+                Assert.AreEqual(expected.PropertyBigInt, actual.PropertyBigInt, $"Expected {expected.PropertyBigInt}, but got {actual.PropertyBigInt} for {nameof(TestEntityD.PropertyBigInt)}");
+                Assert.AreEqual(expected.PropertyVarChar, actual.PropertyVarChar, $"Expected {expected.PropertyVarChar}, but got {actual.PropertyVarChar} for {nameof(TestEntityD.PropertyVarChar)}");
+            }
+        }
+
+        private void AssertAreEqual(TestEntityE expected, TestEntityE actual)
+        {
+            if (expected == null)
+            {
+                Assert.IsNull(actual, $"Expected actual value to be null");
+            }
+            else
+            {
+                Assert.AreEqual(expected.PropertyBigInt, actual.PropertyBigInt, $"Expected {expected.PropertyBigInt}, but got {actual.PropertyBigInt} for {nameof(TestEntityE.PropertyBigInt)}");
+                Assert.AreEqual(expected.PropertyVarChar, actual.PropertyVarChar, $"Expected {expected.PropertyVarChar}, but got {actual.PropertyVarChar} for {nameof(TestEntityE.PropertyVarChar)}");
             }
         }
     }

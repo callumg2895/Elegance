@@ -54,11 +54,17 @@ namespace Elegance.Core.Tests.Data.TestRepository
                             tea.property_nullable_datetime          AS PropertyNullableDateTime,
                             tea.property_nullable_enum              AS PropertyNullableEnum,
                             teb.property_bigint                     AS TestEntityB_PropertyBigInt,
-                            tec.property_bigint                     AS TestEntityC_PropertyBigInt
+                            tec.property_bigint                     AS TestEntityC_PropertyBigInt,
+                            ted.property_bigint                     AS TestEntityD_PropertyBigInt,
+                            ted.property_varchar                    AS TestEntityD_PropertyVarChar,
+                            tee.property_bigint                     AS TestEntityE_PropertyBigInt,
+                            tee.property_varchar                    AS TestEntityE_PropertyVarChar
 
                 from        test_entity_a tea (nolock)
                 left join   test_entity_b teb (nolock)              on tea.property_bigint = teb.property_bigint
-                left join   test_entity_c tec (nolock)              on tea.property_bigint = tec.property_bigint";
+                left join   test_entity_c tec (nolock)              on tea.property_bigint = tec.property_bigint
+                left join   test_entity_d ted (nolock)              on tea.property_bigint = ted.property_bigint
+                left join   test_entity_e tee (nolock)              on tea.property_bigint = tee.property_bigint";
 
 
         private const string _testEntitySelectCountText = @"
@@ -498,6 +504,8 @@ namespace Elegance.Core.Tests.Data.TestRepository
             var entityALookup = new Dictionary<long, TestEntityA>();
             var entityBLookup = new Dictionary<long, TestEntityB>();
             var entityCLookup = new Dictionary<long, TestEntityC>();
+            var entityDLookup = new Dictionary<long, HashSet<TestEntityD>>();
+            var entityELookup = new Dictionary<long, HashSet<TestEntityE>>();
             var entities = new List<TestEntityA>();
 
             while (reader.Read())
@@ -505,6 +513,8 @@ namespace Elegance.Core.Tests.Data.TestRepository
                 var entityABigInt = (long)GetReaderValue(reader, nameof(TestEntityA.PropertyBigInt));
                 var entityBBigInt = (long?)GetReaderValue(reader, $"{nameof(TestEntityB)}_{nameof(TestEntityB.PropertyBigInt)}");
                 var entityCBigInt = (long?)GetReaderValue(reader, $"{nameof(TestEntityC)}_{nameof(TestEntityC.PropertyBigInt)}");
+                var entityDBigInt = (long?)GetReaderValue(reader, $"{nameof(TestEntityD)}_{nameof(TestEntityD.PropertyBigInt)}");
+                var entityEBigInt = (long?)GetReaderValue(reader, $"{nameof(TestEntityE)}_{nameof(TestEntityE.PropertyBigInt)}");
 
                 if (!entityALookup.TryGetValue(entityABigInt, out TestEntityA entityA))
                 {
@@ -532,6 +542,8 @@ namespace Elegance.Core.Tests.Data.TestRepository
                     entityA.PropertyNullableEnum = (TestEnumA?)GetReaderValue(reader, nameof(TestEntityA.PropertyNullableEnum));
 
                     entityALookup.Add(entityABigInt, entityA);
+                    entityDLookup.Add(entityABigInt, new HashSet<TestEntityD>());
+                    entityELookup.Add(entityABigInt, new HashSet<TestEntityE>());
                     entities.Add(entityA);
                 }
 
@@ -553,6 +565,77 @@ namespace Elegance.Core.Tests.Data.TestRepository
 
                     entityA.TestEntityC = entityC;
                     entityCLookup.Add(entityCBigInt.Value, entityC);
+                }
+
+                var dLookup = entityDLookup[entityABigInt];
+                var eLookup = entityELookup[entityABigInt];
+
+                if (entityDBigInt.HasValue)
+                {
+                    if (entityA.TestEntityDList == null)
+                    {
+                        entityA.TestEntityDList = new List<TestEntityD>();
+                    }
+
+                    var entityD = new TestEntityD();
+
+                    entityD.PropertyBigInt = entityDBigInt.Value;
+                    entityD.PropertyVarChar = (string)GetReaderValue(reader, $"{nameof(TestEntityD)}_{nameof(TestEntityD.PropertyVarChar)}");
+
+                    if (dLookup.Count == 0)
+                    {
+                        entityA.TestEntityDList.Add(entityD);
+                        dLookup.Add(entityD);
+                    }
+
+                    var matches = false;
+
+                    foreach (var d in dLookup)
+                    {
+                        matches |= (    d.PropertyBigInt == entityD.PropertyBigInt && 
+                                        d.PropertyVarChar == entityD.PropertyVarChar);
+                    }
+
+                    if (!matches)
+                    {
+                        entityA.TestEntityDList.Add(entityD);
+                        dLookup.Add(entityD);
+                        continue;
+                    }
+                }
+
+                if (entityEBigInt.HasValue)
+                {
+                    if (entityA.TestEntityEList == null)
+                    {
+                        entityA.TestEntityEList = new List<TestEntityE>();
+                    }
+
+                    var entityE = new TestEntityE();
+
+                    entityE.PropertyBigInt = entityEBigInt.Value;
+                    entityE.PropertyVarChar = (string)GetReaderValue(reader, $"{nameof(TestEntityE)}_{nameof(TestEntityE.PropertyVarChar)}");
+
+                    if (eLookup.Count == 0)
+                    {
+                        entityA.TestEntityEList.Add(entityE);
+                        eLookup.Add(entityE);
+                    }
+
+                    var matches = false;
+
+                    foreach (var e in eLookup)
+                    {
+                        matches |= (    e.PropertyBigInt == entityE.PropertyBigInt &&
+                                        e.PropertyVarChar == entityE.PropertyVarChar);
+                    }
+
+                    if (!matches)
+                    {
+                        entityA.TestEntityEList.Add(entityE);
+                        eLookup.Add(entityE);
+                        continue;
+                    }
                 }
             }
 

@@ -96,5 +96,11 @@ namespace Elegance.Core.Tests.Data.TestEntities
 
         [AlternateAlias("TestEntityC")]
         public TestEntityC TestEntityC { get; set; }
+
+        [AlternateAlias("TestEntityD")]
+        public List<TestEntityD> TestEntityDList { get; set; }
+
+        [AlternateAlias("TestEntityE")]
+        public List<TestEntityE> TestEntityEList { get; set; }
     }
 }

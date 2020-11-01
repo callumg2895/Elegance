@@ -13,6 +13,8 @@ namespace Elegance.Core.Data.Query
 {
     internal class ObjectDbQuery<T> : DbQuery<T> where T : new()
     {
+        private readonly IList<ObjectMap> _resultSet;
+
         internal ObjectDbQuery( IDbSession session, 
                                 IDbConnection connection, 
                                 IDbTransaction transaction, 
@@ -20,26 +22,36 @@ namespace Elegance.Core.Data.Query
                                 CommandType commandType)
             : base(session, connection, transaction, commandText, commandType)
         {
-
+            _resultSet = new List<ObjectMap>();
         }
 
         protected override IList<T> GetResultFromReader(IDbDataReader reader)
         {
-            var results = new List<T>();
-
             while (reader.Read())
             {
-                results.Add(GetResult(reader));
+                ReadResult(reader);
             }
 
-            return results;
+            return _resultSet
+                .Select(r => (T)r.Value)
+                .ToList();
         }
 
-        private T GetResult(IDbDataReader reader)
+        private void ReadResult(IDbDataReader reader)
         {
-            var objectMap = new ObjectMap(reader, typeof(T));
+            var currentObjectMap = new ObjectMap(reader, typeof(T));
+            var originalObjectMap = _resultSet.Contains(currentObjectMap)
+                ? _resultSet[_resultSet.IndexOf(currentObjectMap)]
+                : null;
 
-            return (T)objectMap.Value;
+            if (originalObjectMap == null)
+            {
+                _resultSet.Add(currentObjectMap);
+            }
+            else
+            {
+                originalObjectMap.Merge(currentObjectMap);
+            }
         }
     }
 }
