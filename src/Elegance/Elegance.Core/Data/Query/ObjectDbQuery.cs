@@ -14,6 +14,7 @@ namespace Elegance.Core.Data.Query
     internal class ObjectDbQuery<T> : DbQuery<T> where T : new()
     {
         private readonly IList<ObjectMap> _resultSet;
+        private readonly ObjectMetadataFactory _metadataFactory;
 
         internal ObjectDbQuery( IDbSession session, 
                                 IDbConnection connection, 
@@ -23,6 +24,7 @@ namespace Elegance.Core.Data.Query
             : base(session, connection, transaction, commandText, commandType)
         {
             _resultSet = new List<ObjectMap>();
+            _metadataFactory = new ObjectMetadataFactory();
         }
 
         protected override IList<T> GetResultFromReader(IDbDataReader reader)
@@ -39,7 +41,8 @@ namespace Elegance.Core.Data.Query
 
         private void ReadResult(IDbDataReader reader)
         {
-            var currentObjectMap = new ObjectMap(reader, typeof(T));
+            var type = typeof(T);
+            var currentObjectMap = new ObjectMap(_metadataFactory, reader, type);
             var originalObjectMap = _resultSet.Contains(currentObjectMap)
                 ? _resultSet[_resultSet.IndexOf(currentObjectMap)]
                 : null;

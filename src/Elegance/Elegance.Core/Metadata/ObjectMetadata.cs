@@ -16,6 +16,8 @@ namespace Elegance.Core.Metadata
 
         private readonly Dictionary<PropertyInfo, PropertyMetadata> _propertyMetadataLookup;
 
+        private ObjectMetadata _parent;
+
         private ObjectMetadata()
         {
             _allProperties = new List<PropertyInfo>();
@@ -25,32 +27,33 @@ namespace Elegance.Core.Metadata
             _propertyMetadataLookup = new Dictionary<PropertyInfo, PropertyMetadata>();
         }
 
-        public ObjectMetadata(Type type, ObjectMetadata parent)
+        public ObjectMetadata(Type type)
             : this()
         {
             Type = type;
-            Parent = parent;
 
-            foreach (var property in type.GetProperties())
-            {
-                var metaData = new PropertyMetadata(property, this);
-
-                if (metaData.IsComplex)
-                {
-                    _complexProperties.Add(property);
-                }
-                else
-                {
-                    _simpleProperties.Add(property);
-                }
-
-                _propertyMetadataLookup.Add(property, metaData);
-                _allProperties.Add(property);
-            }
+            BuildPropertyMetadata();
         }
 
         public Type Type { get; private set; }
-        public ObjectMetadata Parent { get; private set; }
+
+        public ObjectMetadata Parent 
+        { 
+            get 
+            { 
+                return _parent;
+            }
+
+            set 
+            {
+                if (_parent == null)
+                {
+                    _parent = value;
+
+                    BuildPropertyMetadata();
+                }
+            } 
+        }
 
         public List<PropertyInfo> GetProperties()
         {
@@ -72,6 +75,31 @@ namespace Elegance.Core.Metadata
             _propertyMetadataLookup.TryGetValue(property, out var metadata);
 
             return metadata;
+        }
+
+        private void BuildPropertyMetadata()
+        {
+            _allProperties.Clear();
+            _complexProperties.Clear();
+            _simpleProperties.Clear();
+            _propertyMetadataLookup.Clear();
+
+            foreach (var property in Type.GetProperties())
+            {
+                var metaData = new PropertyMetadata(property, this);
+
+                if (metaData.IsComplex)
+                {
+                    _complexProperties.Add(property);
+                }
+                else
+                {
+                    _simpleProperties.Add(property);
+                }
+
+                _propertyMetadataLookup.Add(property, metaData);
+                _allProperties.Add(property);
+            }
         }
     }
 }

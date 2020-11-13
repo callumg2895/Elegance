@@ -230,12 +230,12 @@ namespace Elegance.Core.Tests.Tests
 
             var testEntityB = new TestEntityB()
             {
-
+                PropertyBigInt = seed,
             };
 
             var testEntityC = new TestEntityC()
             {
-
+                PropertyBigInt = seed,
             };
 
             var testEntityA = new TestEntityA()
@@ -289,20 +289,17 @@ namespace Elegance.Core.Tests.Tests
                 testEntityA.PropertyNullableDateTime = DateTime.Now.AddDays(seed);
             }
 
-            testEntityB.PropertyBigInt = testEntityA.PropertyBigInt;
-            testEntityC.PropertyBigInt = testEntityA.PropertyBigInt;
-
             for (int i = 0; i < 5; i++)
             {
                 var testEntityD = new TestEntityD()
                 {
-                    PropertyBigInt = testEntityA.PropertyBigInt,
+                    PropertyBigInt = seed,
                     PropertyVarChar = $"{seed}_{i}",
                 };
 
                 var testEntityE = new TestEntityE()
                 {
-                    PropertyBigInt = testEntityA.PropertyBigInt,
+                    PropertyBigInt = seed,
                     PropertyVarChar = $"{seed}_{i}",
                 };
 
@@ -311,19 +308,17 @@ namespace Elegance.Core.Tests.Tests
 
                 if (insert)
                 {
-                    _testEntityDRepository.InsertTestEntity_Standard(testEntityD);
                     _testEntityERepository.InsertTestEntity_Standard(testEntityE);
+                    _testEntityDRepository.InsertTestEntity_Standard(testEntityD);
                 }
             }
 
             if (insert)
             {
-                _testEntityARepository.InsertTestEntity_Standard(testEntityA);
-                _testEntityBRepository.InsertTestEntity_Standard(testEntityB);
                 _testEntityCRepository.InsertTestEntity_Standard(testEntityC);
+                _testEntityBRepository.InsertTestEntity_Standard(testEntityB);
+                _testEntityARepository.InsertTestEntity_Standard(testEntityA);
             }
-
-
 
             return testEntityA;
         }

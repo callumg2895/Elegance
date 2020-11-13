@@ -17,57 +17,53 @@ namespace Elegance.Core.Metadata
         private readonly List<object> _primitiveValues;
         private readonly List<ObjectMap> _complexValues;
         private readonly Dictionary<PropertyInfo, ObjectMap> _complexValuesLookup;
+        private readonly Type _type;
+        private readonly ObjectMetadataFactory _metadataFactory;
+        private readonly ObjectMetadata _metadata;
         private readonly IDbDataReader _reader;
 
         private int _hash;
+        private bool _isCollection;
 
-        private ObjectMap()
+        private ObjectMap(ObjectMetadataFactory metadataFactory, Type type, ObjectMap parent)
         {
+            _hash = 0;
+            _isCollection = typeof(IList).IsAssignableFrom(type);
+
+            _metadataFactory = metadataFactory;
             _primitiveValues = new List<object>(); 
             _complexValues = new List<ObjectMap>();
             _complexValuesLookup = new Dictionary<PropertyInfo, ObjectMap>();
+            _type = _isCollection
+                ? type.GenericTypeArguments[0] 
+                : type;
+            _metadata = _metadataFactory.GetMetdata(_type);
 
-            _hash = 0;
+            _metadata.Parent = parent?._metadata;
         }
 
-        internal ObjectMap(IDbDataReader reader, Type type, ObjectMap parent = null)
-            : this()
+        internal ObjectMap(ObjectMetadataFactory metadataFactory, IDbDataReader reader, Type type, ObjectMap parent = null)
+            : this(metadataFactory, type, parent)
         {
             _reader = reader;
 
-            if (typeof(IList).IsAssignableFrom(type))
-            {
-                type = type.GenericTypeArguments[0];
-            }
-
-            MetaData = new ObjectMetadata(type, parent?.MetaData);
-            Type = type;
-            Value = Activator.CreateInstance(type);
+            Value = Activator.CreateInstance(_type);
 
             ReadSimpleProperties();
             ReadComplexProperties();
         }
 
-        internal ObjectMap(object obj, Type type, ObjectMap parent = null)
-            : this()
+        internal ObjectMap(ObjectMetadataFactory metadataFactory, object value, Type type, ObjectMap parent = null)
+            : this(metadataFactory, type, parent)
         {
             _reader = null;
 
-            if (typeof(IList).IsAssignableFrom(type))
-            {
-                type = type.GenericTypeArguments[0];
-            }
-
-            MetaData = new ObjectMetadata(type, parent?.MetaData);
-            Type = type;
-            Value = obj;
+            Value = value;
 
             ReadSimpleProperties();
             ReadComplexProperties();
         }
 
-        public ObjectMetadata MetaData { get; private set; }
-        public Type Type { get; private set; }
         public object Value { get; private set; }
 
         public void Merge(ObjectMap objectMap)
@@ -82,9 +78,9 @@ namespace Elegance.Core.Metadata
             // If we're merging, the only thing that could possibly be different are the 
             // many to one mappings.
 
-            foreach (var property in MetaData.GetComplexProperties())
+            foreach (var property in _metadata.GetComplexProperties())
             {
-                var propertyMetadata = MetaData.GetMetadata(property);
+                var propertyMetadata = _metadata.GetMetadata(property);
 
                 if (!propertyMetadata.IsCollection)
                 {
@@ -92,19 +88,19 @@ namespace Elegance.Core.Metadata
                 }
 
                 // Need to get the original value as an object map somehow
+                var currentValueEntryObjectMap = objectMap._complexValuesLookup[property];
                 var originalValueCollection = (IList)property.GetValue(Value);
                 var originalValueObjectMapCollection = new List<ObjectMap>();
-                
+              
                 foreach (var value in originalValueCollection)
                 {
-                    originalValueObjectMapCollection.Add(new ObjectMap(value, property.PropertyType, this));
+                    originalValueObjectMapCollection.Add(new ObjectMap(_metadataFactory, value, property.PropertyType, this));
                 }
 
-                var currentValueEntryObjectMap = objectMap._complexValuesLookup[property];
+                var index = originalValueObjectMapCollection.IndexOf(currentValueEntryObjectMap);
 
-                if (originalValueObjectMapCollection.Contains(currentValueEntryObjectMap))
+                if (index >= 0)
                 {
-                    var index = originalValueObjectMapCollection.IndexOf(currentValueEntryObjectMap);
                     var originalValueEntryObjectMap = originalValueObjectMapCollection[index];
 
                     originalValueEntryObjectMap.Merge(currentValueEntryObjectMap);
@@ -130,33 +126,29 @@ namespace Elegance.Core.Metadata
             return comparisonObj == null
                 ? false
                 : Equals(comparisonObj);
-        }
+        } 
 
         private bool Equals(ObjectMap objectMap)
         {
-            if (objectMap._primitiveValues.Count != _primitiveValues.Count)
-            {
-                return false;
-            }
+            bool areEqual = objectMap._primitiveValues.Count == _primitiveValues.Count;
 
-            for (int i = 0; i < _primitiveValues.Count; i++)
+            if (areEqual)
             {
-                if (objectMap._primitiveValues[i].Equals(_primitiveValues[i]))
+                for (int i = 0; i < Math.Max(_primitiveValues.Count, _complexValues.Count); i++)
                 {
-                    continue;
+                    areEqual &= (_primitiveValues.Count <= i || objectMap._primitiveValues[i].Equals(_primitiveValues[i]));
+                    areEqual &= (_complexValues.Count <= i || _complexValues[i]._isCollection || objectMap._complexValues[i].Equals(_complexValues[i]));
                 }
-
-                return false;
             }
 
-            return true;
+            return areEqual;
         }
 
         private void ReadSimpleProperties()
         {
-            foreach (var property in MetaData.GetSimpleProperties())
+            foreach (var property in _metadata.GetSimpleProperties())
             {
-                var propertyMetadata = MetaData.GetMetadata(property);
+                var propertyMetadata = _metadata.GetMetadata(property);
                 var alias = propertyMetadata.Aliases.FirstOrDefault(a => _reader?.HasValue(a) ?? false);
                 var propertyValue = _reader == null 
                     ? property.GetValue(Value) ?? DBNull.Value
@@ -187,61 +179,66 @@ namespace Elegance.Core.Metadata
 
         private void ReadComplexProperties()
         {
-            foreach (var property in MetaData.GetComplexProperties())
+            foreach (var property in _metadata.GetComplexProperties())
             {
-                object propertyValue = null;
-
                 var type = property.PropertyType;
-                var propertyMetadata = MetaData.GetMetadata(property);
-                var parentObject = this;
+                ObjectMap childObject;
+                ObjectMap parentObject = this;
 
                 if (_reader == null)
                 {
-                    propertyValue = property.GetValue(Value);
+                    var propertyMetadata = _metadata.GetMetadata(property);
+                    var propertyValue = property.GetValue(Value);
 
-                    if (typeof(IList).IsAssignableFrom(type))
+                    if (propertyMetadata.IsCollection)
                     {
                         propertyValue = ((IList)propertyValue)[0];
                     }
+
+                    childObject = new ObjectMap(_metadataFactory, propertyValue, type, parentObject);
+                }
+                else
+                {
+                    childObject =  new ObjectMap(_metadataFactory, _reader, type, parentObject);
                 }
 
-                var childObject = _reader == null
-                    ? new ObjectMap(propertyValue, type, parentObject)
-                    : new ObjectMap(_reader, type, parentObject);
-
-                if (parentObject.Value == null || childObject.Value == null)
+                if (childObject.Value == null || parentObject.Value == null)
                 {
                     continue;
                 }
 
-                if (propertyMetadata.IsCollection)
-                {
-                    var collectionProperty = parentObject.MetaData
-                        .GetComplexProperties()
-                        .FirstOrDefault(p => typeof(IList).IsAssignableFrom(p.PropertyType) && p.PropertyType.GenericTypeArguments[0] == childObject.Type);
-                    var collectionInstance = Activator.CreateInstance(collectionProperty.PropertyType);
-                    var collectionValue = Convert.ChangeType(childObject.Value, childObject.Type);
-
-                    ((IList)collectionInstance).Add(collectionValue);
-
-                    collectionProperty.SetValue(parentObject.Value, collectionInstance);
-                }
-                else
-                {
-                    parentObject.MetaData
-                        .GetComplexProperties()
-                        .FirstOrDefault(p => p.PropertyType == childObject.Type)?
-                        .SetValue(parentObject.Value, childObject.Value);
-                }
-
-                childObject.MetaData
-                    .GetComplexProperties()
-                    .FirstOrDefault(p => p.PropertyType == parentObject.Type)?
-                    .SetValue(childObject.Value, parentObject.Value);
+                parentObject.AddChild(property, childObject);
+                childObject.AddParent(parentObject);
 
                 _complexValues.Add(childObject);
                 _complexValuesLookup.Add(property, childObject);
             }
+        }
+
+        private void AddChild(PropertyInfo property, ObjectMap child)
+        {
+            var propertyMetadata = _metadata.GetMetadata(property);
+            var childValue = child.Value;
+
+            if (propertyMetadata.IsCollection)
+            {
+                var collectionInstance = Activator.CreateInstance(property.PropertyType);
+                var collectionValue = Convert.ChangeType(childValue, child._type);
+
+                ((IList)collectionInstance).Add(collectionValue);
+
+                childValue = collectionInstance;
+            }
+
+            property.SetValue(Value, childValue);
+        }
+
+        private void AddParent(ObjectMap parent)
+        {
+            _metadata
+                .GetComplexProperties()
+                .FirstOrDefault(p => p.PropertyType == parent._type)?
+                .SetValue(Value, parent.Value);
         }
     }
 }
