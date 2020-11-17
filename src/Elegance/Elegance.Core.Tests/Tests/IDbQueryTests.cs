@@ -34,49 +34,31 @@ namespace Elegance.Core.Tests.Tests
         /// Test Method: Test001a_WhenReadingReferenceTypeResultFromRawSQLAliased_ResultShouldMatchStandardReaderResult:
         /// 
         /// When a raw SQL select statement is passed to the CreateQuery method, the results should match
-        /// the results produced by the manually written reader code when the select statement is aliased.
+        /// the results produced by the manually written reader code.
         /// </summary>
         [TestMethod]
-        public void Test001a_WhenReadingReferenceTypeResultFromRawSQLAliased_ResultShouldMatchStandardReaderResult()
+        [DataRow(TestConfiguration.Config1, DisplayName = "When the select statement is aliased")]
+        [DataRow(TestConfiguration.Config2, DisplayName = "When the select statement is not aliased")]
+        public void Test001_WhenReadingReferenceTypeResultFromRawSQL_ResultShouldMatchStandardReaderResult(TestConfiguration config)
         {
             // Arrange
+            var configurationLookup = new Dictionary<TestConfiguration, TestConfigurationData<IList<TestEntityA>>>()
+            {
+                { TestConfiguration.Config1,    new TestConfigurationData<IList<TestEntityA>>() {  ExpectedResultFunction =  _testEntityARepository.GetAll_Standard_Aliased,        ActualResultFunction = _testEntityARepository.GetAll_Query_Aliased } },
+                { TestConfiguration.Config2,    new TestConfigurationData<IList<TestEntityA>>() {  ExpectedResultFunction =  _testEntityARepository.GetAll_Standard_NonAliased,     ActualResultFunction = _testEntityARepository.GetAll_Query_NonAliased } },
+            };
+
             for (int i = 0; i < 10; i++)
             {
                 GenerateTestEntity();
             }
 
-            // Act
-            var expectedResults = _testEntityARepository.GetAll_Standard_Aliased();
-            var actualResults = _testEntityARepository.GetAll_Query_Aliased();
-
-            // Assert
-            Assert.AreEqual(expectedResults.GetType(), actualResults.GetType(), $"Expected type '{expectedResults.GetType().Name}', but got type '{actualResults.GetType().Name}'");
-            Assert.AreEqual(expectedResults.Count, actualResults.Count, $"Expected {expectedResults.Count} results, but got {actualResults.Count}");
-
-            for (int i = 0; i < expectedResults.Count; i++)
-            {
-                AssertAreEqual(expectedResults[i], actualResults[i]);
-            }
-        }
-
-        /// <summary>
-        /// Test Method: Test001b_WhenReadingReferenceTypeResultFromRawSQLNotAliased_ResultShouldMatchStandardReaderResult:
-        /// 
-        /// When a raw SQL select statement is passed to the CreateQuery method, the results should match
-        /// the results produced by the manually written reader code when the select statement is not aliased.
-        /// </summary>
-        [TestMethod]
-        public void Test001b_WhenReadingReferenceTypeResultFromRawSQLNotAliased_ResultShouldMatchStandardReaderResult()
-        {
-            // Arrange
-            for (int i = 0; i < 10; i++)
-            {
-                GenerateTestEntity();
-            }
+            var expectedResultsMethod = configurationLookup[config].ExpectedResultFunction;
+            var actualResultsMethod = configurationLookup[config].ActualResultFunction;
 
             // Act
-            var expectedResults = _testEntityARepository.GetAll_Standard_NonAliased();
-            var actualResults = _testEntityARepository.GetAll_Query_NonAliased();
+            var expectedResults = expectedResultsMethod();
+            var actualResults = actualResultsMethod();
 
             // Assert
             Assert.AreEqual(expectedResults.GetType(), actualResults.GetType(), $"Expected type '{expectedResults.GetType().Name}', but got type '{actualResults.GetType().Name}'");

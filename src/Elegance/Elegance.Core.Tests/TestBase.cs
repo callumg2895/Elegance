@@ -14,6 +14,18 @@ namespace Elegance.Core.Tests
     [TestClass]
     public abstract class TestBase
     {
+        public enum TestConfiguration
+        {
+            Config1,
+            Config2,
+        }
+
+        public struct TestConfigurationData<T>
+        {
+            public Func<T> ExpectedResultFunction;
+            public Func<T> ActualResultFunction;
+        }
+
         private static readonly Queue<Action> _cleanupActions;
 
         protected static readonly ResourceRepository _resourceRepository;
