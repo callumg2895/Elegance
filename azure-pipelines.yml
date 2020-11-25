@@ -18,12 +18,12 @@ variables:
   buildConfiguration: 'Release'
   Major: '0'
   Minor: '1'
-  Patch: '0'
+  Patch: '4'
 
 steps:
 - task: NuGetToolInstaller@1
   inputs:
-    versionSpec: '4.9.1'
+    versionSpec: '5.8.0'
     checkLatest: true
 
 - task: NuGetCommand@2
