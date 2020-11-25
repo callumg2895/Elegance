@@ -6,30 +6,16 @@ using System.Text;
 
 namespace Elegance.Core.Data
 {
-    public class DbNonQuery : IDbNonQuery, IDisposable
+    public class DbNonQuery : DbExecutable, IDbNonQuery
     {
-        private readonly IDictionary<string, IDbDataParameter> _parametersLookup;
-
-        private readonly IDbConnection _connection;
-        private readonly IDbTransaction _transaction;
-        private readonly IDbCommand _command;
-
-        internal DbNonQuery(IDbConnection connection, IDbTransaction transaction, string commandText, CommandType commandType)
+        internal DbNonQuery(    IDbSession session,
+                                IDbConnection connection,
+                                IDbTransaction transaction,
+                                string commandText,
+                                CommandType commandType)
+            : base(session, connection, transaction, commandText, commandType)
         {
-            if (connection == null || connection.State != ConnectionState.Open)
-            {
-                throw new ArgumentException("Cannot create a database command on a closed connection.");
-            }
 
-            _parametersLookup = new Dictionary<string, IDbDataParameter>();
-            _connection = connection;
-            _transaction = transaction;
-
-            _command = _connection.CreateCommand();
-
-            _command.Transaction = _transaction;
-            _command.CommandText = commandText;
-            _command.CommandType = commandType;
         }
 
         public IDbNonQuery SetParameter<TParam>(string name, TParam value)
@@ -96,11 +82,6 @@ namespace Elegance.Core.Data
         public void Execute()
         {
             _command.ExecuteNonQuery();
-        }
-
-        public void Dispose()
-        {
-            _command?.Dispose();
         }
     }
 }

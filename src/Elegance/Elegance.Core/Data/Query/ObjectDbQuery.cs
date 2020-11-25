@@ -1,5 +1,6 @@
 ﻿using Elegance.Core.Attributes;
 using Elegance.Core.Interface;
+using Elegance.Core.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -12,110 +13,50 @@ namespace Elegance.Core.Data.Query
 {
     internal class ObjectDbQuery<T> : DbQuery<T> where T : new()
     {
-        private readonly Dictionary<PropertyInfo, string> _propertyAliasLookup;
+        private readonly IList<ObjectMap> _resultSet;
+        private readonly ISet<ObjectMap> _resultSetHash;
+        private readonly ObjectMetadataFactory _metadataFactory;
 
-        private DataTable _schemaTable;
-
-        internal ObjectDbQuery(IDbConnection connection, IDbTransaction transaction, string commandText, CommandType commandType)
-            : base(connection, transaction, commandText, commandType)
+        internal ObjectDbQuery( IDbSession session, 
+                                IDbConnection connection, 
+                                IDbTransaction transaction, 
+                                string commandText, 
+                                CommandType commandType)
+            : base(session, connection, transaction, commandText, commandType)
         {
-            _propertyAliasLookup = new Dictionary<PropertyInfo, string>();
+            _resultSet = new List<ObjectMap>();
+            _resultSetHash = new HashSet<ObjectMap>();
+            _metadataFactory = new ObjectMetadataFactory();
         }
 
-        protected override IList<T> GetResultFromReader(IDataReader reader)
+        protected override IList<T> GetResultFromReader(IDbDataReader reader)
         {
-            var results = new List<T>();
-
             while (reader.Read())
             {
-                var result = new T();
-
-                foreach (PropertyInfo property in typeof(T).GetProperties())
-                {
-                    var value = GetReaderValue(reader, property);
-                    var type = property.PropertyType;
-                    var nullUnderlyingType = Nullable.GetUnderlyingType(type);
-
-                    if (value == DBNull.Value)
-                    {
-                        property.SetValue(result, null);
-                    }
-                    else if (type.IsEnum)
-                    {
-                        var enumUnderlyingType = (nullUnderlyingType ?? type).GetEnumUnderlyingType();
-                        var convertedUnderlyingValue = Convert.ChangeType(value, enumUnderlyingType);
-                        var convertedValue = Enum.Parse(type, convertedUnderlyingValue.ToString());
-
-                        property.SetValue(result, convertedValue);
-                    }
-                    else
-                    {
-                        var convertedValue = Convert.ChangeType(value, nullUnderlyingType ?? type);
-
-                        property.SetValue(result, convertedValue);
-                    }
-                }
-
-                results.Add(result);
+                ReadResult(reader);
             }
 
-            return results;
+            return _resultSet
+                .Select(r => (T)r.Value)
+                .ToList();
         }
 
-        private object GetReaderValue(IDataReader reader, PropertyInfo property)
+        private void ReadResult(IDbDataReader reader)
         {
-            if (_propertyAliasLookup.TryGetValue(property, out string alias))
+            var currentObjectMap = new ObjectMap(_metadataFactory, reader, typeof(T));
+            
+            if (_resultSetHash.Contains(currentObjectMap))
             {
-                return reader[alias];
+                var index = _resultSet.IndexOf(currentObjectMap);
+                var originalObjectMap = _resultSet[index];
+
+                originalObjectMap.Merge(currentObjectMap);
             }
             else
             {
-                alias = GetAliasOptions(property)
-                    .Where(o => !string.IsNullOrEmpty(o))
-                    .FirstOrDefault(o => HasColumn(reader, o));
+                _resultSet.Add(currentObjectMap);
+                _resultSetHash.Add(currentObjectMap);
             }
-
-            if (string.IsNullOrEmpty(alias))
-            {
-                return null;
-            }
-
-            _propertyAliasLookup.Add(property, alias);
-
-            return reader[alias];
-        }
-
-        private List<string> GetAliasOptions(PropertyInfo property)
-        {
-            var aliasOptions = new List<string>();
-            var columnName = (property.GetCustomAttribute(typeof(ColumnAttribute)) as ColumnAttribute)?.Name;
-            var alternateAliases = property.GetCustomAttributes()
-                .Where(p => p is AlternateAliasAttribute)
-                .Select(p => (p as AlternateAliasAttribute).Name);
-
-            aliasOptions.Add(property.Name);
-            aliasOptions.Add(columnName);
-            aliasOptions.AddRange(alternateAliases);
-
-            return aliasOptions;
-        }
-
-        private bool HasColumn(IDataReader reader, string columnName)
-        {
-            if (_schemaTable == null)
-            {
-                _schemaTable = reader.GetSchemaTable();
-            }
-
-            foreach (DataRow row in _schemaTable.Rows)
-            {
-                if (row["ColumnName"].ToString() == columnName)
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
     }
 }

@@ -8,30 +8,16 @@ using System.Text;
 
 namespace Elegance.Core.Data
 {
-    internal abstract class DbQuery<T> : IDbQuery<T>, IDisposable
+    internal abstract class DbQuery<T> : DbExecutable, IDbQuery<T>
     {
-        private readonly IDictionary<string, IDbDataParameter> _parametersLookup;
-
-        private readonly IDbConnection _connection;
-        private readonly IDbTransaction _transaction;
-        private readonly IDbCommand _command;
-
-        internal DbQuery(IDbConnection connection, IDbTransaction transaction, string commandText, CommandType commandType)
+        internal DbQuery(   IDbSession session, 
+                            IDbConnection connection, 
+                            IDbTransaction transaction, 
+                            string commandText, 
+                            CommandType commandType)
+            : base(session, connection, transaction, commandText, commandType)
         {
-            if (connection == null || connection.State != ConnectionState.Open)
-            {
-                throw new ArgumentException("Cannot create a Query on a closed connection.");
-            }
 
-            _parametersLookup = new Dictionary<string, IDbDataParameter>();
-            _connection = connection;
-            _transaction = transaction;
-
-            _command = _connection.CreateCommand();
-
-            _command.Transaction = _transaction;
-            _command.CommandText = commandText;
-            _command.CommandType = commandType;
         }
 
         public virtual T Result()
@@ -46,9 +32,9 @@ namespace Elegance.Core.Data
             return GetResultFromReader(reader);
         }
 
-        public virtual IDataReader Reader()
+        public virtual IDbDataReader Reader()
         {
-            return _command.ExecuteReader();
+            return new DbDataReader(_command.ExecuteReader());
         }
 
         public IDbQuery<T> SetParameter<TParam>(string name, TParam value)
@@ -112,11 +98,6 @@ namespace Elegance.Core.Data
             return this;
         }
 
-        protected abstract IList<T> GetResultFromReader(IDataReader reader);
-
-        public void Dispose()
-        {
-            _command?.Dispose();
-        }
+        protected abstract IList<T> GetResultFromReader(IDbDataReader reader);
     }
 }

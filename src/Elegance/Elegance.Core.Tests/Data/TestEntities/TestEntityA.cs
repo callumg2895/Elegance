@@ -90,5 +90,17 @@ namespace Elegance.Core.Tests.Data.TestEntities
         [Column("property_nullable_enum")]
         [AlternateAlias("PropertyNullableEnum")]
         public TestEnumA? PropertyNullableEnum { get; set; }
+
+        [AlternateAlias("TestEntityB")]
+        public TestEntityB TestEntityB { get; set; }
+
+        [AlternateAlias("TestEntityC")]
+        public TestEntityC TestEntityC { get; set; }
+
+        [AlternateAlias("TestEntityD")]
+        public List<TestEntityD> TestEntityDList { get; set; }
+
+        [AlternateAlias("TestEntityE")]
+        public List<TestEntityE> TestEntityEList { get; set; }
     }
 }

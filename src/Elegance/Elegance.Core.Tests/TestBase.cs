@@ -14,10 +14,26 @@ namespace Elegance.Core.Tests
     [TestClass]
     public abstract class TestBase
     {
+        public enum TestConfiguration
+        {
+            Config1,
+            Config2,
+        }
+
+        public struct TestConfigurationData<T>
+        {
+            public Func<T> ExpectedResultFunction;
+            public Func<T> ActualResultFunction;
+        }
+
         private static readonly Queue<Action> _cleanupActions;
 
         protected static readonly ResourceRepository _resourceRepository;
         protected static readonly TestEntityARepository _testEntityARepository;
+        protected static readonly TestEntityBRepository _testEntityBRepository;
+        protected static readonly TestEntityCRepository _testEntityCRepository;
+        protected static readonly TestEntityDRepository _testEntityDRepository;
+        protected static readonly TestEntityERepository _testEntityERepository;
 
         static TestBase()
         {
@@ -25,6 +41,10 @@ namespace Elegance.Core.Tests
 
             _resourceRepository = new ResourceRepository();
             _testEntityARepository = new TestEntityARepository();
+            _testEntityBRepository = new TestEntityBRepository();
+            _testEntityCRepository = new TestEntityCRepository();
+            _testEntityDRepository = new TestEntityDRepository();
+            _testEntityERepository = new TestEntityERepository();
         }
 
         public TestBase()
@@ -36,6 +56,10 @@ namespace Elegance.Core.Tests
         public static void AssemblyInitialize(TestContext context)
         {
             _resourceRepository.LoadStaticData("CreateTestEntityATable");
+            _resourceRepository.LoadStaticData("CreateTestEntityBTable");
+            _resourceRepository.LoadStaticData("CreateTestEntityCTable");
+            _resourceRepository.LoadStaticData("CreateTestEntityDTable");
+            _resourceRepository.LoadStaticData("CreateTestEntityETable");
             _resourceRepository.LoadStoredProcedure("GetTestEntityAItems");
             _resourceRepository.LoadStoredProcedure("CreateTestEntityAItem");
         }
@@ -48,13 +72,13 @@ namespace Elegance.Core.Tests
         }
 
         [TestInitialize]
-        public void TestInitialize()
+        public virtual void TestInitialize()
         {
             
         }
 
         [TestCleanup]
-        public void TestCleanup()
+        public virtual void TestCleanup()
         {
             while (_cleanupActions.TryDequeue(out Action action))
             {

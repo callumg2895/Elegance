@@ -18,57 +18,47 @@ namespace Elegance.Core.Tests.Tests
 
         }
 
+        [TestInitialize]
+        public override void TestInitialize()
+        {
+            base.TestInitialize();
+
+            AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
+            AddCleanupAction(() => { _testEntityBRepository.DeleteTestEntities(); });
+            AddCleanupAction(() => { _testEntityCRepository.DeleteTestEntities(); });
+            AddCleanupAction(() => { _testEntityDRepository.DeleteTestEntities(); });
+            AddCleanupAction(() => { _testEntityERepository.DeleteTestEntities(); });
+        }
+
         /// <summary>
         /// Test Method: Test001a_WhenReadingReferenceTypeResultFromRawSQLAliased_ResultShouldMatchStandardReaderResult:
         /// 
         /// When a raw SQL select statement is passed to the CreateQuery method, the results should match
-        /// the results produced by the manually written reader code when the select statement is aliased.
+        /// the results produced by the manually written reader code.
         /// </summary>
         [TestMethod]
-        public void Test001a_WhenReadingReferenceTypeResultFromRawSQLAliased_ResultShouldMatchStandardReaderResult()
+        [DataRow(TestConfiguration.Config1, DisplayName = "When the select statement is aliased")]
+        [DataRow(TestConfiguration.Config2, DisplayName = "When the select statement is not aliased")]
+        public void Test001_WhenReadingReferenceTypeResultFromRawSQL_ResultShouldMatchStandardReaderResult(TestConfiguration config)
         {
             // Arrange
+            var configurationLookup = new Dictionary<TestConfiguration, TestConfigurationData<IList<TestEntityA>>>()
+            {
+                { TestConfiguration.Config1,    new TestConfigurationData<IList<TestEntityA>>() {  ExpectedResultFunction =  _testEntityARepository.GetAll_Standard_Aliased,        ActualResultFunction = _testEntityARepository.GetAll_Query_Aliased } },
+                { TestConfiguration.Config2,    new TestConfigurationData<IList<TestEntityA>>() {  ExpectedResultFunction =  _testEntityARepository.GetAll_Standard_NonAliased,     ActualResultFunction = _testEntityARepository.GetAll_Query_NonAliased } },
+            };
+
             for (int i = 0; i < 10; i++)
             {
                 GenerateTestEntity();
             }
 
-            AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
+            var expectedResultsMethod = configurationLookup[config].ExpectedResultFunction;
+            var actualResultsMethod = configurationLookup[config].ActualResultFunction;
 
             // Act
-            var expectedResults = _testEntityARepository.GetAll_Standard();
-            var actualResults = _testEntityARepository.GetAll_Query_Aliased();
-
-            // Assert
-            Assert.AreEqual(expectedResults.GetType(), actualResults.GetType(), $"Expected type '{expectedResults.GetType().Name}', but got type '{actualResults.GetType().Name}'");
-            Assert.AreEqual(expectedResults.Count, actualResults.Count, $"Expected {expectedResults.Count} results, but got {actualResults.Count}");
-
-            for (int i = 0; i < expectedResults.Count; i++)
-            {
-                AssertAreEqual(expectedResults[i], actualResults[i]);
-            }
-        }
-
-        /// <summary>
-        /// Test Method: Test001b_WhenReadingReferenceTypeResultFromRawSQLNotAliased_ResultShouldMatchStandardReaderResult:
-        /// 
-        /// When a raw SQL select statement is passed to the CreateQuery method, the results should match
-        /// the results produced by the manually written reader code when the select statement is not aliased.
-        /// </summary>
-        [TestMethod]
-        public void Test001b_WhenReadingReferenceTypeResultFromRawSQLNotAliased_ResultShouldMatchStandardReaderResult()
-        {
-            // Arrange
-            for (int i = 0; i < 10; i++)
-            {
-                GenerateTestEntity();
-            }
-
-            AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
-
-            // Act
-            var expectedResults = _testEntityARepository.GetAll_Standard();
-            var actualResults = _testEntityARepository.GetAll_Query_NonAliased();
+            var expectedResults = expectedResultsMethod();
+            var actualResults = actualResultsMethod();
 
             // Assert
             Assert.AreEqual(expectedResults.GetType(), actualResults.GetType(), $"Expected type '{expectedResults.GetType().Name}', but got type '{actualResults.GetType().Name}'");
@@ -92,8 +82,6 @@ namespace Elegance.Core.Tests.Tests
             // Arrange
             var testEntity = GenerateTestEntity();
 
-            AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
-
             // Act
             var expectedResult = _testEntityARepository.GetByAllProperties_Standard(testEntity);
             var actualResult = _testEntityARepository.GetByAllProperties_Query(testEntity);
@@ -116,8 +104,6 @@ namespace Elegance.Core.Tests.Tests
             var testEntity = GenerateTestEntity(insert: true);
             var testEntity2 = GenerateTestEntity(insert: false);
 
-            AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
-
             // Act
             var result = _testEntityARepository.GetByAllProperties_Query(testEntity2);
 
@@ -136,8 +122,6 @@ namespace Elegance.Core.Tests.Tests
         {
             // Arrange
             var testEntity = GenerateTestEntity();
-
-            AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
 
             // Act
             var expectedResult = _testEntityARepository.GetAllCount_Standard();
@@ -159,8 +143,6 @@ namespace Elegance.Core.Tests.Tests
         {
             // Arrange
             var testEntity = GenerateTestEntity();
-
-            AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
 
             // Act
             var results = _testEntityARepository.GetAll_Query_StoredProcedure(out int status, out string message);
@@ -186,8 +168,6 @@ namespace Elegance.Core.Tests.Tests
             var testEntity = GenerateTestEntity();
             _testEntityARepository.InsertTestEntity_Standard(testEntity);
 
-            AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
-
             // Act
             var result = _testEntityARepository.GetByAllProperties_Query_StoredProcedure(testEntity, out int status, out string message);
 
@@ -212,10 +192,8 @@ namespace Elegance.Core.Tests.Tests
                 GenerateTestEntity();
             }
 
-            AddCleanupAction(() => { _testEntityARepository.DeleteTestEntities(); });
-
             // Act
-            var expectedResults = _testEntityARepository.GetAll_Standard();
+            var expectedResults = _testEntityARepository.GetAll_Standard_Aliased();
             var actualResults = _testEntityARepository.GetAll_Query_Reader();
 
             // Assert
@@ -232,15 +210,25 @@ namespace Elegance.Core.Tests.Tests
         {
             seed++;
 
-            var testEntity = new TestEntityA()
+            var testEntityB = new TestEntityB()
+            {
+                PropertyBigInt = seed,
+            };
+
+            var testEntityC = new TestEntityC()
+            {
+                PropertyBigInt = seed,
+            };
+
+            var testEntityA = new TestEntityA()
             {
                 PropertyBigInt = seed,
                 PropertyInt = seed,
                 PropertySmallInt = (short)(seed % short.MaxValue),
                 PropertyTinyInt = (byte)(seed % byte.MaxValue),
-                PropertyReal = seed/float.MaxValue,
-                PropertyFloat = seed/double.MaxValue,
-                PropertyDecimal = seed/decimal.MaxValue,
+                PropertyReal = seed / float.MaxValue,
+                PropertyFloat = seed / double.MaxValue,
+                PropertyDecimal = seed / decimal.MaxValue,
                 PropertyVarChar = $"{seed}",
                 PropertyDateTime = DateTime.Now.AddDays(seed),
 
@@ -251,38 +239,70 @@ namespace Elegance.Core.Tests.Tests
                 PropertyNullableReal = seed / float.MaxValue,
                 PropertyNullableFloat = seed / double.MaxValue,
                 PropertyNullableDecimal = seed / decimal.MaxValue,
-                PropertyNullableDateTime = DateTime.Now.AddDays(seed)
+                PropertyNullableDateTime = DateTime.Now.AddDays(seed),
+
+                TestEntityB = testEntityB,
+                TestEntityC = testEntityC,
+
+                TestEntityDList = new List<TestEntityD>(),
+                TestEntityEList = new List<TestEntityE>(),
             };
 
             if (seed % 2 == 0)
             {
-                testEntity.PropertyNullableBigInt = null;
-                testEntity.PropertyNullableInt = null;
-                testEntity.PropertyNullableSmallInt = null;
-                testEntity.PropertyNullableTinyInt = null;
-                testEntity.PropertyNullableReal = null;
-                testEntity.PropertyNullableFloat = null;
-                testEntity.PropertyNullableDecimal = null;
-                testEntity.PropertyNullableDateTime = null;
+                testEntityA.PropertyNullableBigInt = null;
+                testEntityA.PropertyNullableInt = null;
+                testEntityA.PropertyNullableSmallInt = null;
+                testEntityA.PropertyNullableTinyInt = null;
+                testEntityA.PropertyNullableReal = null;
+                testEntityA.PropertyNullableFloat = null;
+                testEntityA.PropertyNullableDecimal = null;
+                testEntityA.PropertyNullableDateTime = null;
             }
             else
             {
-                testEntity.PropertyNullableBigInt = seed;
-                testEntity.PropertyNullableInt = seed;
-                testEntity.PropertyNullableSmallInt = (short)(seed % short.MaxValue);
-                testEntity.PropertyNullableTinyInt = (byte)(seed % byte.MaxValue);
-                testEntity.PropertyNullableReal = seed / float.MaxValue;
-                testEntity.PropertyNullableFloat = seed / double.MaxValue;
-                testEntity.PropertyNullableDecimal = seed / decimal.MaxValue;
-                testEntity.PropertyNullableDateTime = DateTime.Now.AddDays(seed);
+                testEntityA.PropertyNullableBigInt = seed;
+                testEntityA.PropertyNullableInt = seed;
+                testEntityA.PropertyNullableSmallInt = (short)(seed % short.MaxValue);
+                testEntityA.PropertyNullableTinyInt = (byte)(seed % byte.MaxValue);
+                testEntityA.PropertyNullableReal = seed / float.MaxValue;
+                testEntityA.PropertyNullableFloat = seed / double.MaxValue;
+                testEntityA.PropertyNullableDecimal = seed / decimal.MaxValue;
+                testEntityA.PropertyNullableDateTime = DateTime.Now.AddDays(seed);
+            }
+
+            for (int i = 0; i < 5; i++)
+            {
+                var testEntityD = new TestEntityD()
+                {
+                    PropertyBigInt = seed,
+                    PropertyVarChar = $"{seed}_{i}",
+                };
+
+                var testEntityE = new TestEntityE()
+                {
+                    PropertyBigInt = seed,
+                    PropertyVarChar = $"{seed}_{i}",
+                };
+
+                testEntityA.TestEntityDList.Add(testEntityD);
+                testEntityA.TestEntityEList.Add(testEntityE);
+
+                if (insert)
+                {
+                    _testEntityERepository.InsertTestEntity_Standard(testEntityE);
+                    _testEntityDRepository.InsertTestEntity_Standard(testEntityD);
+                }
             }
 
             if (insert)
             {
-                _testEntityARepository.InsertTestEntity_Standard(testEntity);
+                _testEntityCRepository.InsertTestEntity_Standard(testEntityC);
+                _testEntityBRepository.InsertTestEntity_Standard(testEntityB);
+                _testEntityARepository.InsertTestEntity_Standard(testEntityA);
             }
 
-            return testEntity;
+            return testEntityA;
         }
 
         private void AssertAreEqual(TestEntityA expected, TestEntityA actual)
@@ -307,6 +327,78 @@ namespace Elegance.Core.Tests.Tests
             Assert.AreEqual(expected.PropertyNullableDecimal, actual.PropertyNullableDecimal, $"Expected {expected.PropertyNullableDecimal}, but got {actual.PropertyNullableDecimal} for {nameof(TestEntityA.PropertyNullableDecimal)}");
             Assert.AreEqual(expected.PropertyNullableDateTime, actual.PropertyNullableDateTime, $"Expected {expected.PropertyNullableDateTime}, but got {actual.PropertyNullableDateTime} for {nameof(TestEntityA.PropertyNullableDateTime)}");
             Assert.AreEqual(expected.PropertyNullableEnum, actual.PropertyNullableEnum, $"Expected {expected.PropertyNullableEnum}, but got {actual.PropertyNullableEnum} for {nameof(TestEntityA.PropertyNullableEnum)}");
+
+            AssertAreEqual(expected.TestEntityB, actual.TestEntityB);
+            AssertAreEqual(expected.TestEntityC, actual.TestEntityC);
+
+            Assert.AreEqual(expected.TestEntityDList?.Count, actual.TestEntityDList?.Count);
+            Assert.AreEqual(expected.TestEntityEList?.Count, actual.TestEntityEList?.Count);
+
+            if (expected.TestEntityDList != null)
+            {
+                for (int i = 0; i < expected.TestEntityDList.Count; i++)
+                {
+                    AssertAreEqual(expected.TestEntityDList[i], actual.TestEntityDList[i]);
+                }
+            }
+
+            if (expected.TestEntityEList != null)
+            {
+                for (int i = 0; i < expected.TestEntityEList.Count; i++)
+                {
+                    AssertAreEqual(expected.TestEntityEList[i], actual.TestEntityEList[i]);
+                }
+            }
+        }
+
+        private void AssertAreEqual(TestEntityB expected, TestEntityB actual)
+        {
+            if (expected == null)
+            {
+                Assert.IsNull(actual, $"Expected actual value to be null");
+            }
+            else
+            {
+                Assert.AreEqual(expected.PropertyBigInt, actual.PropertyBigInt, $"Expected {expected.PropertyBigInt}, but got {actual.PropertyBigInt} for {nameof(TestEntityB.PropertyBigInt)}");
+            }
+        }
+
+        private void AssertAreEqual(TestEntityC expected, TestEntityC actual)
+        {
+            if (expected == null)
+            {
+                Assert.IsNull(actual, $"Expected actual value to be null");
+            }
+            else
+            {
+                Assert.AreEqual(expected.PropertyBigInt, actual.PropertyBigInt, $"Expected {expected.PropertyBigInt}, but got {actual.PropertyBigInt} for {nameof(TestEntityC.PropertyBigInt)}");
+            }
+        }
+
+        private void AssertAreEqual(TestEntityD expected, TestEntityD actual)
+        {
+            if (expected == null)
+            {
+                Assert.IsNull(actual, $"Expected actual value to be null");
+            }
+            else
+            {
+                Assert.AreEqual(expected.PropertyBigInt, actual.PropertyBigInt, $"Expected {expected.PropertyBigInt}, but got {actual.PropertyBigInt} for {nameof(TestEntityD.PropertyBigInt)}");
+                Assert.AreEqual(expected.PropertyVarChar, actual.PropertyVarChar, $"Expected {expected.PropertyVarChar}, but got {actual.PropertyVarChar} for {nameof(TestEntityD.PropertyVarChar)}");
+            }
+        }
+
+        private void AssertAreEqual(TestEntityE expected, TestEntityE actual)
+        {
+            if (expected == null)
+            {
+                Assert.IsNull(actual, $"Expected actual value to be null");
+            }
+            else
+            {
+                Assert.AreEqual(expected.PropertyBigInt, actual.PropertyBigInt, $"Expected {expected.PropertyBigInt}, but got {actual.PropertyBigInt} for {nameof(TestEntityE.PropertyBigInt)}");
+                Assert.AreEqual(expected.PropertyVarChar, actual.PropertyVarChar, $"Expected {expected.PropertyVarChar}, but got {actual.PropertyVarChar} for {nameof(TestEntityE.PropertyVarChar)}");
+            }
         }
     }
 }
